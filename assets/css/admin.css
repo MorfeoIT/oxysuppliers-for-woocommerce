@@ -1,0 +1,36 @@
+/**
+ * Admin styles.
+ *
+ * Deliberately small: the screens are WordPress admin screens and should look
+ * like them. This file styles the few things core has no class for.
+ */
+
+.oxysuppliers-wrap .form-table th {
+	width: 220px;
+}
+
+.oxysuppliers-wrap h2 {
+	margin-top: 1.6em;
+}
+
+.oxysuppliers-status {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 3px;
+	font-size: 12px;
+	line-height: 1.8;
+}
+
+.oxysuppliers-status.is-active {
+	background: #edfaef;
+	color: #00450c;
+}
+
+.oxysuppliers-status.is-inactive {
+	background: #f0f0f1;
+	color: #50575e;
+}
+
+.oxysuppliers-error {
+	margin: 4px 0 0;
+}

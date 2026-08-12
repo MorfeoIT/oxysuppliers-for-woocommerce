@@ -1,0 +1,126 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Coding standards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer
+
+      - run: composer install --no-interaction --no-progress
+
+      - run: composer run lint
+
+  analyse:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer
+
+      - run: composer install --no-interaction --no-progress
+
+      - run: composer run analyse
+
+  unit:
+    name: Unit tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.2', '8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer
+
+      - run: composer install --no-interaction --no-progress
+
+      # The domain calls no WordPress function by design, so this suite runs
+      # with no database anywhere in sight.
+      - run: vendor/bin/phpunit --testsuite unit
+
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: wordpress_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          extensions: mysqli
+          tools: composer
+
+      - run: composer install --no-interaction --no-progress
+
+      - name: Run the integration suite
+        env:
+          WP_PHPUNIT__TESTS_CONFIG: tests/wp-tests-config.php
+          WP_TESTS_DB_NAME: wordpress_test
+          WP_TESTS_DB_USER: root
+          WP_TESTS_DB_PASSWORD: ''
+          WP_TESTS_DB_HOST: 127.0.0.1
+        run: vendor/bin/phpunit --testsuite integration
+
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # What ships is what git archive produces, so the only way to know it is
+      # right is to build it and look inside. This job is here because the same
+      # one on OxyArea found a plugin that claimed a licence it did not ship.
+      - name: Build the distributable
+        run: |
+          git archive --format=tar --prefix=oxysuppliers-for-woocommerce/ HEAD | tar -tf - > files.txt
+          cat files.txt
+
+      - name: The package must carry its licence and no development files
+        run: |
+          set -e
+          grep -q 'oxysuppliers-for-woocommerce/LICENSE' files.txt
+          grep -q 'oxysuppliers-for-woocommerce/readme.txt' files.txt
+          grep -q 'oxysuppliers-for-woocommerce/oxysuppliers-for-woocommerce.php' files.txt
+          ! grep -q 'oxysuppliers-for-woocommerce/tests/' files.txt
+          ! grep -q 'oxysuppliers-for-woocommerce/docs/' files.txt
+          ! grep -q 'oxysuppliers-for-woocommerce/composer.json' files.txt
+          ! grep -q 'oxysuppliers-for-woocommerce/.github' files.txt

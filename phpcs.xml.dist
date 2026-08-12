@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<ruleset name="OxySuppliers for WooCommerce">
+    <description>WordPress coding standards for this plugin.</description>
+
+    <file>src</file>
+    <file>oxysuppliers-for-woocommerce.php</file>
+    <file>uninstall.php</file>
+
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="ps"/>
+
+    <!--
+        This ruleset must never be more permissive than Plugin Check, which
+        applies its own and ignores this file entirely. Anything that genuinely
+        does not apply is said in the code with a phpcs:ignore and a reason, so
+        that both tools see the same thing.
+    -->
+    <rule ref="WordPress">
+        <!-- The Domain layer is framework-free PSR-4, so the WordPress
+             one-class-per-lowercase-file convention does not apply to it.
+             Everything else in the standard is enforced. -->
+        <exclude name="WordPress.Files.FileName"/>
+    </rule>
+
+    <config name="minimum_wp_version" value="6.5"/>
+    <config name="testVersion" value="8.1-"/>
+
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array">
+                <element value="oxysuppliers-for-woocommerce"/>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- "oxysuppliers" is the plugin's public prefix for database tables,
+         capabilities, hooks, options and the REST namespace. "oxy" on its own is
+         three characters, which this sniff and the wordpress.org guidelines both
+         reject as too short to be unique, and it would collide with the rest of
+         the OxyWP family. -->
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array">
+                <element value="Oxysoft\OxySuppliers"/>
+                <element value="oxysuppliers"/>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- This sniff compares a @param type against the PHP type hint and does not
+         understand PHPDoc generics, so it reports "list<Supplier>" against
+         "array" as a mismatch. The same check is done properly by PHPStan at
+         level 8, which is where array shapes are actually enforced here. -->
+    <rule ref="Squiz.Commenting.FunctionComment.IncorrectTypeHint">
+        <severity>0</severity>
+    </rule>
+</ruleset>

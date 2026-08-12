@@ -1,0 +1,12 @@
+parameters:
+    level: 8
+    paths:
+        - src
+        - oxysuppliers-for-woocommerce.php
+        - uninstall.php
+    bootstrapFiles:
+        - tests/phpstan-bootstrap.php
+    scanFiles:
+        - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+    treatPhpDocTypesAsCertain: false
