@@ -324,6 +324,29 @@ final class GoodsReceiverTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * A lock that is taken can be given back, whatever the token looks like.
+	 *
+	 * The column holds thirty-two characters and a UUID is thirty-six. MySQL
+	 * took the first thirty-two without a word, and the value being matched on
+	 * the way out was no longer the value that had been stored: the lock was
+	 * taken and never released, and every delivery after the first was told the
+	 * order was busy.
+	 *
+	 * @return void
+	 */
+	public function test_a_long_token_still_unlocks(): void {
+		$order = $this->sent_order();
+		$long  = wp_generate_uuid4() . '-and-then-some';
+
+		$this->assertTrue( $this->receipts->lock( $order->id, $long ) );
+		$this->assertFalse( $this->receipts->lock( $order->id, 'qualcun-altro' ) );
+
+		$this->receipts->unlock( $order->id, $long );
+
+		$this->assertTrue( $this->receipts->lock( $order->id, 'qualcun-altro' ) );
+	}
+
+	/**
 	 * Only the holder can release the lock.
 	 *
 	 * @return void

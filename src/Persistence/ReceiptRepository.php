@@ -296,6 +296,7 @@ final class ReceiptRepository {
 	public function lock( int $po_id, string $token ): bool {
 		global $wpdb;
 
+		$token = self::token( $token );
 		$table = Tables::name( Tables::PURCHASE_ORDERS );
 		$now   = current_time( 'mysql', true );
 		$stale = gmdate( 'Y-m-d H:i:s', strtotime( $now ) - self::LOCK_SECONDS );
@@ -329,6 +330,7 @@ final class ReceiptRepository {
 	public function unlock( int $po_id, string $token ): void {
 		global $wpdb;
 
+		$token = self::token( $token );
 		$table = Tables::name( Tables::PURCHASE_ORDERS );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table from a constant, every value bound.
@@ -339,6 +341,26 @@ final class ReceiptRepository {
 				$token
 			)
 		);
+	}
+
+	/**
+	 * A lock token that fits the column it is stored in.
+	 *
+	 * `lock_token` is `char(32)`, and a UUID is thirty-six characters. Outside
+	 * strict mode MySQL takes the first thirty-two and says nothing — after
+	 * which the lock can be taken and **never released**, because the value
+	 * being matched on the way out is not the value that was stored. Every
+	 * receipt after the first would then be told the order was busy.
+	 *
+	 * Hashing here rather than widening the column: the token is opaque, and a
+	 * schema change to hold four more characters is a migration nobody should
+	 * have to run.
+	 *
+	 * @param string $token Whatever the caller had.
+	 * @return string Exactly 32 characters.
+	 */
+	private static function token( string $token ): string {
+		return md5( $token ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_md5 -- Not a security hash: a 32-character identifier for a 32-character column.
 	}
 
 	/**
