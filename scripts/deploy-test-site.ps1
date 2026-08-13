@@ -42,7 +42,10 @@ if ($LASTEXITCODE -ne 0) { throw 'scp fallito' }
 
 # A plugin that is already active makes WP-CLI warn and return non-zero, which
 # is not a failed deploy.
-$activate = if ($SkipActivate) { 'true' } else { "wp plugin activate $slug || true" }
+# A plugin that is already active makes WP-CLI warn on stderr and return
+# non-zero, which is not a failed deploy — and PowerShell turns any stderr from
+# a native command into an error record, so the warning has to go too.
+$activate = if ($SkipActivate) { 'true' } else { "wp plugin activate $slug >/dev/null 2>&1 || true" }
 
 $remote = @"
 set -e
