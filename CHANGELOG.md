@@ -5,6 +5,44 @@ oxywp.com is generated from `readme.txt`, which follows this file.
 
 ## [Unreleased]
 
+### Sprint 7 — goods on the way, what things cost, and the world outside (13/08/2026)
+
+**Goods on the way stop being zero.** What has been ordered and not yet received
+is subtracted from what needs reordering, and shown on the product screen next
+to the stock, with the date to expect it. A shop that reorders what is already
+in a van pays for it twice; the specification put this in the paid add-on, and
+it is here instead. What stays paid is the hard half: predicting what will sell
+*while* the goods are travelling.
+
+**Every delivery writes down what was really paid.** A separate record, never
+rewritten: a cost that turns out to be wrong is followed by another entry saying
+what it is now.
+
+- Undoing a delivery puts back the cost **that delivery replaced** — which is
+  written on its own entry — rather than the cost as it stands, which is the
+  figure being taken away. Getting this wrong made a correction correct nothing;
+  found on the bench, and now guarded by two tests.
+- Undoing the *first* delivery of an article leaves "we do not know what this
+  costs" rather than the ordered price. A price somebody typed is not a price
+  somebody paid. Schema 2, where the cost may be null.
+
+**OxyProfit, if it is there.** Our costs are offered to it first, ahead of one
+typed into a product screen months ago. The class implementing its interface
+lives outside `src/` so the autoloader cannot reach it: on a shop without
+OxyProfit, merely loading that file would be a fatal error.
+
+- **Reports**: money committed, open orders, articles below the reorder point,
+  and orders that are late — with the four that need the paid add-on named
+  rather than hidden behind a disabled button.
+- **Importing a price list from CSV**, with a mandatory preview: a byte order
+  mark, semicolons, comma decimals and Italian headings all read, bad rows
+  listed rather than dropped, and nothing written until somebody has seen what
+  it would do.
+- **A read-only REST API** under `oxysuppliers/v1`, each route with its own
+  permission check.
+- 89 unit tests, 81 inside WordPress, 117 over HTTP, 47 against the seeded shop
+  — including what happens with OxyProfit absent and present on the same site.
+
 ### Sprint 6 — goods receipts (13/08/2026)
 
 The sprint where being wrong means a shop sells what it has not got. Receiving

@@ -164,6 +164,35 @@ obbligatoria**.
 errore; con OxyProfit presente il costo della ricezione arriva; una correzione
 di costo non viene raccontata come un fatto nuovo.
 
+**Fatto il 13/08/2026.** Tutti e tre i criteri provati sul banco, i primi due
+sullo stesso sito: `scripts/fake-oxyprofit.php` dichiara il minimo indispensabile
+della loro interfaccia, così si cammina anche il ramo "OxyProfit c'è" senza
+installare il loro plugin — e il fatto che quel minimo basti è la prova che la
+cucitura dipende solo dall'interfaccia pubblicata.
+
+Il terzo criterio è quello che ha trovato il difetto vero, e non era una svista
+di scrittura ma un ragionamento sbagliato: per sapere quale costo rimettere,
+l'annullamento chiedeva **quanto costa adesso**, e adesso era proprio la cifra da
+togliere. Riscriveva quella, e la correzione non correggeva niente. La risposta
+giusta era già nella riga della ricezione annullata, nella colonna che dice cosa
+aveva sostituito. Da lì è venuta anche la domanda a cui non avevo risposto: se
+quella era la **prima** consegna dell'articolo non c'è niente da rimettere, e
+scriverci il costo dell'ordine trasformerebbe un prezzo digitato in un prezzo
+pagato. Ora la riga dice "non lo sappiamo più" (schema 2, costo che ammette il
+nullo), e `cost_on()` tratta le due assenze allo stesso modo.
+
+Due lezioni sull'ambiente di prova, pagate qui:
+
+- **la virgola decimale nei test di integrazione non funziona**, perché a
+  normalizzarla è `wc_format_decimal` e in CI non c'è WooCommerce: lì i costi si
+  scrivono col punto, e cosa fa la virgola lo prova il banco. Un test che
+  falliva mi stava dicendo la verità sull'ambiente, non sul codice;
+- **le rotte REST sul banco vivono su `?rest_route=`**, non su `/wp-json/`,
+  perché i permalink sono semplici. E via HTTP il solo cookie non basta a farsi
+  riconoscere: senza `X-WP-Nonce` anche l'amministratore è uno sconosciuto,
+  quindi da fuori si prova che la porta è chiusa e i permessi per ruolo si
+  provano da dentro.
+
 ## Sprint 8 — prontezza al rilascio
 
 `readme.txt` con `Tested up to:` **realmente provato**, `.pot` generato con

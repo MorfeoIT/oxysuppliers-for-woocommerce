@@ -44,6 +44,10 @@ function oxs_check( $label, $condition, $detail = '' ) {
 
 global $wpdb;
 
+// Il deploy riattiva il plugin, ma la migrazione la si chiede comunque: e' la
+// stessa che gira su un sito aggiornato senza disattivare niente.
+( new Oxysoft\OxySuppliers\Persistence\Migrator() )->migrate();
+
 $wpdb->query( 'DELETE FROM oxs_oxysuppliers_cost_history' );
 $wpdb->query( 'DELETE FROM oxs_oxysuppliers_receipt_items' );
 $wpdb->query( 'DELETE FROM oxs_oxysuppliers_receipts' );
@@ -60,7 +64,19 @@ $receiver = new GoodsReceiver( $receipts, $orders, new AuditLogger(), $costs );
 
 $mouse = wc_get_product_id_by_sku( 'MOUSE-X' );
 
-echo "== senza OxyProfit non succede niente, ed e' la cosa importante ==\n";
+echo "== lo schema 2 e' arrivato fin qui ==\n";
+
+oxs_check(
+	'la versione dello schema installata e\' quella attesa',
+	Oxysoft\OxySuppliers\Persistence\Migrator::SCHEMA_VERSION === (int) get_option( 'oxysuppliers_db_version' ),
+	'installata=' . get_option( 'oxysuppliers_db_version' )
+);
+
+$column = $wpdb->get_row( "SHOW COLUMNS FROM oxs_oxysuppliers_cost_history LIKE 'new_cost_minor'", ARRAY_A );
+
+oxs_check( 'e il costo puo\' essere nullo, cioe\' sconosciuto', is_array( $column ) && 'YES' === $column['Null'], is_array( $column ) ? $column['Null'] : 'colonna assente' );
+
+echo "\n== senza OxyProfit non succede niente, ed e' la cosa importante ==\n";
 
 oxs_check(
 	'l\'interfaccia di OxyProfit non c\'e\'',

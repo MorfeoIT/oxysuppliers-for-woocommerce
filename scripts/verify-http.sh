@@ -465,6 +465,129 @@ RECV_AS_EDITOR=$(get editor "$ORDERS&action=view&id=$RECV_ID")
 check_absent "un editor non vede il modulo di ricezione" "$RECV_AS_EDITOR" "Receive what has arrived"
 
 echo
+echo "== i report =="
+REPORTS="$BASE/wp-admin/admin.php?page=oxysuppliers&tab=reports"
+CARDS=$(get admin "$REPORTS")
+check "la linguetta si apre" "$CARDS" "Reports"
+check "quanto e' impegnato" "$CARDS" "Money committed"
+check "quanti ordini aperti" "$CARDS" "Open orders"
+check "quanti articoli sotto scorta" "$CARDS" "Below the reorder point"
+check "e quanti in ritardo" "$CARDS" "Late"
+check "dice anche cosa NON fa il gratuito" "$CARDS" "are in the paid add-on"
+
+REPORTS_AS_EDITOR=$(get editor "$REPORTS")
+check_absent "un editor non li vede" "$REPORTS_AS_EDITOR" "Money committed"
+
+echo
+echo "== la merce in arrivo sulla scheda prodotto =="
+# Questo script parte da tabelle vuote, quindi l'ordine aperto se lo crea:
+# dipendere di quello lasciato da un altro script vorrebbe dire dipendere
+# dall'ordine in cui si lanciano.
+OPEN_ORDER=$(sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp eval-file wp-content/plugins/oxysuppliers-for-woocommerce/scripts/bench-open-order.php")
+ETA=${OPEN_ORDER% *}
+DUE=${OPEN_ORDER#* }
+MOUSE_ID=$(sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp db query \"SELECT post_id FROM oxs_postmeta WHERE meta_key = '_sku' AND meta_value = 'MOUSE-X' LIMIT 1\" --skip-column-names")
+MOUSE_PAGE=$(get admin "$BASE/wp-admin/post.php?post=$MOUSE_ID&action=edit")
+check "dice quanta merce sta arrivando" "$MOUSE_PAGE" "On the way:"
+check "quanta ne sta arrivando davvero" "$MOUSE_PAGE" "On the way:</strong> $DUE"
+check "e quando dovrebbe arrivare" "$MOUSE_PAGE" "$ETA"
+
+echo
+echo "== l'import di un listino =="
+BEFORE_LINES=$(sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp db query \"SELECT COUNT(*) FROM oxs_oxysuppliers_supplier_products\" --skip-column-names")
+
+IMPORT="$BASE/wp-admin/admin.php?page=oxysuppliers&tab=import"
+UPLOAD_FORM=$(get admin "$IMPORT")
+check "la linguetta si apre" "$UPLOAD_FORM" "Import a price list"
+check "e promette di non toccare niente prima" "$UPLOAD_FORM" "Nothing is changed until you have seen what it would do"
+
+UPLOAD_NONCE=$(nonce_from "$UPLOAD_FORM")
+CSV_FILE=$(mktemp /tmp/listino-XXXX.csv)
+
+# Il file come lo salva un foglio di calcolo italiano: BOM, punto e virgola,
+# virgola decimale, intestazioni in italiano.
+printf '\xEF\xBB\xBFragione sociale;codice interno;codice fornitore;prezzo;minimo;multiplo;giorni\nFornitore Importato;MOUSE-X;IMP-MX;9,90;10;5;6\n' > "$CSV_FILE"
+
+PREVIEW=$(curl -sS -u "$BASIC" -b "$JARS/admin" -c "$JARS/admin" -L \
+	-F "action=oxysuppliers_import_upload" \
+	-F "_wpnonce=$UPLOAD_NONCE" \
+	-F "oxysuppliers_csv=@$CSV_FILE;type=text/csv" \
+	"$ADMIN_POST")
+
+check "il file viene letto" "$PREVIEW" "What this would do"
+check "e dice cosa succederebbe" "$PREVIEW" "new supplier"
+check "col bottone per confermare" "$PREVIEW" "Do it"
+
+MIDDLE_LINES=$(sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp db query \"SELECT COUNT(*) FROM oxs_oxysuppliers_supplier_products\" --skip-column-names")
+
+if [ "$MIDDLE_LINES" = "$BEFORE_LINES" ]; then
+	pass "L ANTEPRIMA NON HA SCRITTO NIENTE ($BEFORE_LINES righe)"
+else
+	fail "L ANTEPRIMA NON HA SCRITTO NIENTE ($BEFORE_LINES -> $MIDDLE_LINES)"
+fi
+
+CONFIRM_NONCE=$(nonce_from "$PREVIEW")
+APPLIED=$(post admin "$ADMIN_POST" "action=oxysuppliers_import_confirm&_wpnonce=$CONFIRM_NONCE")
+
+AFTER_LINES=$(sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp db query \"SELECT COUNT(*) FROM oxs_oxysuppliers_supplier_products\" --skip-column-names")
+
+if [ "$AFTER_LINES" -gt "$BEFORE_LINES" ]; then
+	pass "e confermando invece scrive ($BEFORE_LINES -> $AFTER_LINES)"
+else
+	fail "e confermando invece scrive ($BEFORE_LINES -> $AFTER_LINES)"
+fi
+
+IMPORTED_COST=$(sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp db query \"SELECT unit_cost_minor FROM oxs_oxysuppliers_supplier_products WHERE supplier_sku = 'IMP-MX' LIMIT 1\" --skip-column-names")
+
+if [ "$IMPORTED_COST" = "990" ]; then
+	pass "e 9,90 e' arrivato come 990 centesimi"
+else
+	fail "e 9,90 e' arrivato come 990 centesimi (ho letto $IMPORTED_COST)"
+fi
+
+IMPORT_AS_EDITOR=$(get editor "$IMPORT")
+check_absent "un editor non importa niente" "$IMPORT_AS_EDITOR" "Import a price list"
+
+NO_NONCE_UPLOAD=$(status_of admin "$ADMIN_POST?action=oxysuppliers_import_upload")
+
+if [ "$NO_NONCE_UPLOAD" = "403" ]; then
+	pass "senza nonce il caricamento viene rifiutato (403)"
+else
+	fail "senza nonce il caricamento viene rifiutato (ho avuto $NO_NONCE_UPLOAD)"
+fi
+
+rm -f "$CSV_FILE"
+
+echo
+echo "== le rotte REST viste da fuori =="
+# Da qui si prova soltanto che la porta e' chiusa. Con il solo cookie
+# WordPress non riconosce nessuno sulle rotte REST -- vuole anche l intestazione
+# X-WP-Nonce -- quindi anche l amministratore risulterebbe uno sconosciuto, e un
+# 401 non direbbe niente sui permessi. Quelli, ruolo per ruolo, li prova
+# verify-sprint7.php da dentro WordPress.
+# Il banco ha i permalink semplici, quindi /wp-json/ non esiste: la forma che
+# funziona ovunque e' ?rest_route=, ed e' quella che va provata.
+REST="$BASE/?rest_route=/oxysuppliers/v1"
+
+for route in requirements orders suppliers; do
+	ANON=$(curl -sS -u "$BASIC" -o /dev/null -w '%{http_code}' "$REST/$route")
+
+	if [ "$ANON" = "401" ] || [ "$ANON" = "403" ]; then
+		pass "/$route e' chiusa a chi non ha fatto l accesso ($ANON)"
+	else
+		fail "/$route e' chiusa a chi non ha fatto l accesso (ho avuto $ANON)"
+	fi
+done
+
+WRITE=$(curl -sS -u "$BASIC" -o /dev/null -w '%{http_code}' -X POST "$REST/suppliers")
+
+if [ "$WRITE" = "404" ] || [ "$WRITE" = "405" ] || [ "$WRITE" = "401" ]; then
+	pass "e in scrittura non esiste proprio ($WRITE)"
+else
+	fail "e in scrittura non esiste proprio (ho avuto $WRITE)"
+fi
+
+echo
 echo "== ==============================="
 echo "== superati: $PASSED   falliti: $FAILED"
 rm -rf "$JARS"

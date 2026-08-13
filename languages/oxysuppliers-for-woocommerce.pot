@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-13T22:32:19+02:00\n"
+"POT-Creation-Date: 2026-08-13T23:43:50+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: oxysuppliers-for-woocommerce\n"
@@ -47,6 +47,166 @@ msgstr ""
 msgid "OxySuppliers needs WooCommerce to be installed and active."
 msgstr ""
 
+#: src/Admin/ImportScreen.php:70
+msgid "Import"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:99
+#: src/Admin/ImportScreen.php:277
+#: src/Admin/ImportScreen.php:353
+msgid "You are not allowed to import suppliers."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:122
+msgid "Import a price list"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:125
+msgid "A CSV file with one row per article a supplier sells you. Nothing is changed until you have seen what it would do."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:131
+msgid "Column"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:132
+msgid "What it is"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:136
+msgid "The supplier's name. Required."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:137
+msgid "Your own SKU, as WooCommerce knows it. Required."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:138
+msgid "Their VAT number. Used to recognise a supplier you already have."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:139
+msgid "Where their orders should go."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:140
+msgid "Their code for the article, which is what goes on the order."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:141
+msgid "What they charge. A comma or a full stop, either way."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:142
+msgid "Their buying terms, as whole numbers."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:147
+msgid "Italian headings work too, and so do semicolons instead of commas: a file saved by a spreadsheet is still a file."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:159
+msgid "Read the file"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:187
+msgid "What this would do"
+msgstr ""
+
+#. translators: 1: new suppliers, 2: new price list lines, 3: updated lines, 4: skipped rows.
+#: src/Admin/ImportScreen.php:194
+#, php-format
+msgid "%1$d suppliers would be created, %2$d price list lines added, %3$d updated, and %4$d rows skipped."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:207
+msgid "Line"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:208
+#: src/Admin/ProductSupplierPanel.php:190
+#: src/Admin/PurchaseOrdersScreen.php:248
+#: src/Admin/PurchaseOrdersScreen.php:366
+#: src/Admin/RequirementsScreen.php:139
+#: src/Admin/RequirementsScreen.php:500
+#: src/Admin/SuppliersScreen.php:201
+#: src/Pdf/PurchaseOrderDocument.php:178
+msgid "Supplier"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:209
+#: src/Admin/RequirementsScreen.php:489
+msgid "SKU"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:210
+#: src/Admin/ProductSupplierPanel.php:192
+#: src/Admin/PurchaseOrdersScreen.php:578
+msgid "Cost"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:211
+msgid "What happens"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:223
+msgid "skipped"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:238
+msgid "Do it"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:240
+msgid "Throw it away"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:257
+msgid "new supplier"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:258
+msgid "supplier already known"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:259
+msgid "price added"
+msgstr ""
+
+#: src/Admin/ImportScreen.php:260
+msgid "price updated"
+msgstr ""
+
+#. translators: 1: suppliers created, 2: price list lines written, 3: rows skipped.
+#: src/Admin/ImportScreen.php:407
+#, php-format
+msgid "Done: %1$d suppliers created, %2$d price list lines written, %3$d rows skipped."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:420
+msgid "No file arrived."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:421
+msgid "That is not a CSV file."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:422
+msgid "That file is larger than five megabytes."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:423
+msgid "That file has more rows than anybody is going to read in a preview. Split it up."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:424
+msgid "There is nothing waiting to be imported."
+msgstr ""
+
+#: src/Admin/ImportScreen.php:434
+msgid "That file could not be read."
+msgstr ""
+
 #: src/Admin/Menu.php:81
 #: src/Admin/Menu.php:82
 msgid "Purchasing"
@@ -57,92 +217,93 @@ msgstr ""
 msgid "You are not allowed to see this page."
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:79
-#: src/Admin/ProductSupplierPanel.php:133
+#: src/Admin/ProductSupplierPanel.php:82
+#: src/Admin/ProductSupplierPanel.php:136
 #: src/Admin/SuppliersScreen.php:70
 #: src/Admin/SuppliersScreen.php:170
 msgid "Suppliers"
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:110
+#: src/Admin/ProductSupplierPanel.php:113
 msgid "This product has variations, and each one is bought separately. Set the suppliers on the Variations tab."
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:164
+#: src/Admin/ProductSupplierPanel.php:167
 msgid "No suppliers yet."
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:166
+#: src/Admin/ProductSupplierPanel.php:169
 #: src/Admin/PurchaseOrdersScreen.php:347
 msgid "Add the first one."
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:185
-#: src/Admin/PurchaseOrdersScreen.php:248
-#: src/Admin/PurchaseOrdersScreen.php:366
-#: src/Admin/RequirementsScreen.php:139
-#: src/Admin/RequirementsScreen.php:500
-#: src/Admin/SuppliersScreen.php:201
-#: src/Pdf/PurchaseOrderDocument.php:178
-msgid "Supplier"
-msgstr ""
-
-#: src/Admin/ProductSupplierPanel.php:186
+#: src/Admin/ProductSupplierPanel.php:191
 #: src/Admin/PurchaseOrdersScreen.php:445
 #: src/Admin/PurchaseOrdersScreen.php:577
 msgid "Their code"
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:187
-#: src/Admin/PurchaseOrdersScreen.php:578
-msgid "Cost"
-msgstr ""
-
-#: src/Admin/ProductSupplierPanel.php:188
+#: src/Admin/ProductSupplierPanel.php:193
 msgid "Minimum"
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:189
+#: src/Admin/ProductSupplierPanel.php:194
 msgid "Multiple"
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:190
+#: src/Admin/ProductSupplierPanel.php:195
 msgid "Per pack"
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:191
+#: src/Admin/ProductSupplierPanel.php:196
 #: src/Admin/SuppliersScreen.php:205
 msgid "Lead time"
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:192
+#: src/Admin/ProductSupplierPanel.php:197
 msgid "Preferred"
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:193
+#: src/Admin/ProductSupplierPanel.php:198
 #: src/Admin/PurchaseOrdersScreen.php:451
 msgid "Remove"
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:206
+#: src/Admin/ProductSupplierPanel.php:211
 msgid "Fill in the empty line to add a supplier. Quantities are rounded up to satisfy the minimum, the multiple and the pack size together."
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:213
+#: src/Admin/ProductSupplierPanel.php:218
 msgid "No preferred supplier: use the cheapest."
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:238
+#: src/Admin/ProductSupplierPanel.php:246
+msgid "not tracked"
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:250
+msgid "Stock:"
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:252
+msgid "On the way:"
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:256
+msgid "Expected:"
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:278
 #: src/Admin/SuppliersScreen.php:921
 msgid "— Select —"
 msgstr ""
 
-#: src/Admin/ProductSupplierPanel.php:241
+#: src/Admin/ProductSupplierPanel.php:281
 msgid "inactive"
 msgstr ""
 
 #. translators: %s: supplier name.
-#: src/Admin/ProductSupplierPanel.php:406
+#: src/Admin/ProductSupplierPanel.php:446
 #, php-format
 msgid "The line for %s was not saved: check the cost and the quantities."
 msgstr ""
@@ -176,6 +337,7 @@ msgid "Any status"
 msgstr ""
 
 #: src/Admin/PurchaseOrdersScreen.php:237
+#: src/Admin/ReportsScreen.php:127
 msgid "Late"
 msgstr ""
 
@@ -581,7 +743,7 @@ msgid "Somebody else is receiving this order right now. Look again before enteri
 msgstr ""
 
 #: src/Admin/PurchaseOrdersScreen.php:1734
-#: src/Service/GoodsReceiver.php:172
+#: src/Service/GoodsReceiver.php:175
 msgid "No quantity was entered, so there was nothing to record."
 msgstr ""
 
@@ -611,6 +773,72 @@ msgstr ""
 
 #: src/Admin/PurchaseOrdersScreen.php:1742
 msgid "That could not be saved. Nothing was changed."
+msgstr ""
+
+#: src/Admin/ReportsScreen.php:57
+#: src/Admin/ReportsScreen.php:97
+msgid "Reports"
+msgstr ""
+
+#: src/Admin/ReportsScreen.php:84
+msgid "You are not allowed to see the reports."
+msgstr ""
+
+#: src/Admin/ReportsScreen.php:102
+msgid "Money committed"
+msgstr ""
+
+#: src/Admin/ReportsScreen.php:104
+msgid "On orders that have gone out and not arrived."
+msgstr ""
+
+#: src/Admin/ReportsScreen.php:106
+#: src/Admin/ReportsScreen.php:114
+msgid "See the orders"
+msgstr ""
+
+#: src/Admin/ReportsScreen.php:110
+msgid "Open orders"
+msgstr ""
+
+#: src/Admin/ReportsScreen.php:112
+msgid "Sent, confirmed or partly received."
+msgstr ""
+
+#: src/Admin/ReportsScreen.php:118
+msgid "Below the reorder point"
+msgstr ""
+
+#: src/Admin/ReportsScreen.php:120
+msgid "Articles at or under the level the shop wanted to buy at."
+msgstr ""
+
+#: src/Admin/ReportsScreen.php:122
+msgid "See what to reorder"
+msgstr ""
+
+#: src/Admin/ReportsScreen.php:129
+msgid "Orders that should have arrived by now."
+msgstr ""
+
+#: src/Admin/ReportsScreen.php:131
+msgid "See the late ones"
+msgstr ""
+
+#. translators: %d: number of articles.
+#: src/Admin/ReportsScreen.php:144
+#, php-format
+msgid "%d article has nobody on file who sells it, so it can never be reordered."
+msgid_plural "%d articles have nobody on file who sells them, so they can never be reordered."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/ReportsScreen.php:155
+msgid "Fill them in"
+msgstr ""
+
+#: src/Admin/ReportsScreen.php:162
+msgid "Cost history, supplier comparison, delivery reliability and spend by supplier are in the paid add-on."
 msgstr ""
 
 #: src/Admin/RequirementsScreen.php:79
@@ -753,10 +981,6 @@ msgstr ""
 
 #: src/Admin/RequirementsScreen.php:479
 msgid "You are not allowed to export this."
-msgstr ""
-
-#: src/Admin/RequirementsScreen.php:489
-msgid "SKU"
 msgstr ""
 
 #: src/Admin/RequirementsScreen.php:492
@@ -1100,6 +1324,46 @@ msgstr ""
 msgid "The supplier could not be saved. Nothing was changed."
 msgstr ""
 
+#: src/Import/PriceListImporter.php:75
+msgid "no product with that SKU"
+msgstr ""
+
+#: src/Import/SupplierCsvParser.php:56
+msgid "The file is empty."
+msgstr ""
+
+#. translators: %s: list of column names.
+#: src/Import/SupplierCsvParser.php:85
+#, php-format
+msgid "The file needs at least a supplier column and an SKU column. Missing: %s."
+msgstr ""
+
+#: src/Import/SupplierCsvParser.php:112
+msgid "The file has a heading row and nothing else."
+msgstr ""
+
+#: src/Import/SupplierCsvParser.php:171
+msgid "no supplier"
+msgstr ""
+
+#: src/Import/SupplierCsvParser.php:175
+msgid "no SKU"
+msgstr ""
+
+#: src/Import/SupplierCsvParser.php:181
+msgid "the cost is not a number"
+msgstr ""
+
+#. translators: %s: column name.
+#: src/Import/SupplierCsvParser.php:190
+#, php-format
+msgid "%s is not a whole number"
+msgstr ""
+
+#: src/Import/SupplierCsvParser.php:199
+msgid "the email address is not one"
+msgstr ""
+
 #: src/Pdf/PurchaseOrderDocument.php:174
 msgid "Purchase order"
 msgstr ""
@@ -1136,50 +1400,50 @@ msgstr ""
 msgid "Your reference"
 msgstr ""
 
-#: src/Service/GoodsReceiver.php:80
+#: src/Service/GoodsReceiver.php:83
 msgid "The form was missing its key. Reload the page and try again."
 msgstr ""
 
-#: src/Service/GoodsReceiver.php:89
+#: src/Service/GoodsReceiver.php:92
 msgid "Somebody else is receiving this order right now. Wait a moment and look again before entering it a second time."
 msgstr ""
 
-#: src/Service/GoodsReceiver.php:112
+#: src/Service/GoodsReceiver.php:115
 msgid "This delivery had already been recorded, so nothing was added a second time."
 msgstr ""
 
 #. translators: %s: list of article names.
-#: src/Service/GoodsReceiver.php:157
+#: src/Service/GoodsReceiver.php:160
 #, php-format
 msgid "More was entered than is still outstanding for: %s. Nothing was recorded."
 msgstr ""
 
 #. translators: 1: number of units, 2: purchase order number.
-#: src/Service/GoodsReceiver.php:219
+#: src/Service/GoodsReceiver.php:223
 #, php-format
 msgid "Received %1$d units against %2$s"
 msgstr ""
 
-#: src/Service/GoodsReceiver.php:257
+#: src/Service/GoodsReceiver.php:261
 msgid "That entry is already a correction of another one."
 msgstr ""
 
-#: src/Service/GoodsReceiver.php:273
+#: src/Service/GoodsReceiver.php:277
 msgid "Somebody else is working on this order right now."
 msgstr ""
 
-#: src/Service/GoodsReceiver.php:293
+#: src/Service/GoodsReceiver.php:297
 msgid "That correction had already been made."
 msgstr ""
 
 #. translators: %d: the receipt being corrected.
-#: src/Service/GoodsReceiver.php:339
+#: src/Service/GoodsReceiver.php:345
 #, php-format
 msgid "Correction of receipt %d"
 msgstr ""
 
 #. translators: 1: quantity moved, 2: receipt id.
-#: src/Service/GoodsReceiver.php:443
+#: src/Service/GoodsReceiver.php:528
 #, php-format
 msgid "%1$+d from receipt %2$d"
 msgstr ""

@@ -543,12 +543,16 @@ final class GoodsReceiverTest extends WP_UnitTestCase {
 	/**
 	 * A delivery records what was charged, not what was ordered.
 	 *
+	 * Costs are written with a full stop here on purpose: the comma is turned
+	 * into one by wc_format_decimal, and there is no WooCommerce in this suite.
+	 * What a comma does is proved on the bench, where there is.
+	 *
 	 * @return void
 	 */
 	public function test_the_cost_recorded_is_the_one_charged(): void {
 		$order = $this->sent_order();
 
-		$this->receiver->receive( $order, array( $order->lines[0]->id => 5 ), array( $order->lines[0]->id => '11,50' ), 'primo' );
+		$this->receiver->receive( $order, array( $order->lines[0]->id => 5 ), array( $order->lines[0]->id => '11.50' ), 'primo' );
 
 		$cost = $this->costs->cost_on( 100, 0 );
 
@@ -569,10 +573,10 @@ final class GoodsReceiverTest extends WP_UnitTestCase {
 	public function test_undoing_a_delivery_puts_the_earlier_cost_back(): void {
 		$order = $this->sent_order();
 
-		$this->receiver->receive( $order, array( $order->lines[0]->id => 5 ), array( $order->lines[0]->id => '11,50' ), 'primo' );
+		$this->receiver->receive( $order, array( $order->lines[0]->id => 5 ), array( $order->lines[0]->id => '11.50' ), 'primo' );
 
 		$order  = $this->orders->find( $order->id );
-		$second = $this->receiver->receive( $order, array( $order->lines[0]->id => 5 ), array( $order->lines[0]->id => '11,80' ), 'secondo' );
+		$second = $this->receiver->receive( $order, array( $order->lines[0]->id => 5 ), array( $order->lines[0]->id => '11.80' ), 'secondo' );
 
 		$this->assertSame( 1180, $this->costs->cost_on( 100, 0 )->minor );
 
@@ -596,7 +600,7 @@ final class GoodsReceiverTest extends WP_UnitTestCase {
 	public function test_undoing_the_first_delivery_leaves_no_cost(): void {
 		$order = $this->sent_order();
 
-		$first = $this->receiver->receive( $order, array( $order->lines[0]->id => 5 ), array( $order->lines[0]->id => '11,50' ), 'unico' );
+		$first = $this->receiver->receive( $order, array( $order->lines[0]->id => 5 ), array( $order->lines[0]->id => '11.50' ), 'unico' );
 
 		$this->receiver->reverse( $first->receipt, 'annullo-unico' );
 

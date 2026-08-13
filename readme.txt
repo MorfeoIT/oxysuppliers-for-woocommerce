@@ -34,6 +34,16 @@ It answers one question, and the whole plugin is arranged around it:
   sending recorded.
 * **Goods receipts.** Receive a whole order or part of one, more than once, with
   stock and costs updated and every movement written down.
+* **Goods on the way.** What has been ordered and not yet arrived is subtracted
+  from what you need to reorder, and shown on the product screen with the date
+  to expect it, so nothing is bought twice.
+* **What things really cost.** Every delivery records the price actually paid,
+  and nothing in that record is ever rewritten.
+* **Reports.** Money committed, open orders, articles below their reorder point,
+  and orders that are late.
+* **Importing a price list.** A CSV from a supplier or a spreadsheet, read with
+  its semicolons and comma decimals, shown to you in full before anything is
+  written.
 
 = What it is not =
 
@@ -79,6 +89,18 @@ receipt be recorded twice, even if the page is reloaded or submitted twice.
 Nothing is removed unless you have explicitly asked for it in the settings. A
 purchase order is a document, and documents should not disappear because a
 plugin was deleted.
+
+= I use OxyProfit. Do the two work together? =
+
+Yes, and you do not have to do anything: OxyProfit picks up what your suppliers
+actually charged, which beats a cost typed into a product screen months ago. If
+OxyProfit is not installed, nothing changes and nothing breaks.
+
+= Will importing a price list overwrite what I have? =
+
+Not before you have seen it. The file is read, and you are shown what would be
+created, what would be changed and which rows have something wrong with them.
+Nothing is written until you say so.
 
 == Changelog ==
 
