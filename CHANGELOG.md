@@ -5,6 +5,33 @@ oxywp.com is generated from `readme.txt`, which follows this file.
 
 ## [Unreleased]
 
+### Sprint 4 — purchase orders (13/08/2026)
+
+- Purchase orders with their lines, a list that filters by supplier, state and
+  lateness, and a document screen.
+- **Tick rows on the reordering screen and get one draft order per supplier.**
+  Fifteen articles from four suppliers are four orders, grouped for you. The
+  quantities are worked out again at that moment, from the stock as it is now:
+  what was on the screen a minute ago was true a minute ago.
+- Nothing is sent. Everything the reordering screen produces is a draft, because
+  a suggestion that posts itself is a suggestion nobody trusts.
+- **The state machine lives in the domain**, not in the screen. The buttons are
+  drawn from what it allows, and a move reached any other way — an old page, a
+  hand-typed address — is refused before anything is written. A cancelled order
+  stays cancelled; a received one can go back to partly received, because
+  reversing a receipt has to leave the order saying something true.
+- **Numbers are unique because the database says so.** The next number is
+  proposed by looking at the highest one used this year; the unique index
+  decides. Two people saving in the same instant get two numbers, and the loser
+  simply asks again. A counter in an option loses one of them silently.
+- Adding articles to an order is done from the supplier's own price list, with a
+  quantity box. No search, no autocomplete, no JavaScript.
+- **The reordering screen now subtracts what is really on order.** A draft does
+  not count — it is a thought, not an order — a sent one does, and a cancelled
+  one stops counting.
+- 89 unit tests, 57 checks inside WordPress, 76 over HTTP, 26 against the seeded
+  shop.
+
 ### Sprint 3 — the reordering screen (13/08/2026)
 
 - **What to reorder**, the screen the plugin exists for: stock, what is held for

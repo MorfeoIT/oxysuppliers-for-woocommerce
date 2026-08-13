@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-13T21:11:17+02:00\n"
+"POT-Creation-Date: 2026-08-13T21:34:10+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: oxysuppliers-for-woocommerce\n"
@@ -53,7 +53,7 @@ msgid "Purchasing"
 msgstr ""
 
 #: src/Admin/Menu.php:117
-#: src/Admin/RequirementsScreen.php:103
+#: src/Admin/RequirementsScreen.php:108
 msgid "You are not allowed to see this page."
 msgstr ""
 
@@ -73,21 +73,27 @@ msgid "No suppliers yet."
 msgstr ""
 
 #: src/Admin/ProductSupplierPanel.php:166
+#: src/Admin/PurchaseOrdersScreen.php:322
 msgid "Add the first one."
 msgstr ""
 
 #: src/Admin/ProductSupplierPanel.php:185
-#: src/Admin/RequirementsScreen.php:125
-#: src/Admin/RequirementsScreen.php:466
+#: src/Admin/PurchaseOrdersScreen.php:223
+#: src/Admin/PurchaseOrdersScreen.php:341
+#: src/Admin/RequirementsScreen.php:139
+#: src/Admin/RequirementsScreen.php:500
 #: src/Admin/SuppliersScreen.php:201
 msgid "Supplier"
 msgstr ""
 
 #: src/Admin/ProductSupplierPanel.php:186
+#: src/Admin/PurchaseOrdersScreen.php:418
+#: src/Admin/PurchaseOrdersScreen.php:550
 msgid "Their code"
 msgstr ""
 
 #: src/Admin/ProductSupplierPanel.php:187
+#: src/Admin/PurchaseOrdersScreen.php:551
 msgid "Cost"
 msgstr ""
 
@@ -113,6 +119,7 @@ msgid "Preferred"
 msgstr ""
 
 #: src/Admin/ProductSupplierPanel.php:193
+#: src/Admin/PurchaseOrdersScreen.php:424
 msgid "Remove"
 msgstr ""
 
@@ -139,215 +146,471 @@ msgstr ""
 msgid "The line for %s was not saved: check the cost and the quantities."
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:75
-msgid "Reordering"
+#: src/Admin/PurchaseOrdersScreen.php:83
+#: src/Admin/PurchaseOrdersScreen.php:176
+msgid "Purchase orders"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:112
-msgid "What to reorder"
+#: src/Admin/PurchaseOrdersScreen.php:113
+msgid "You are not allowed to see purchase orders."
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:121
-#: src/Admin/RequirementsScreen.php:456
-msgid "Article"
+#: src/Admin/PurchaseOrdersScreen.php:179
+#: src/Admin/PurchaseOrdersScreen.php:316
+msgid "New purchase order"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:122
-#: src/Admin/RequirementsScreen.php:460
-msgid "Available"
+#: src/Admin/PurchaseOrdersScreen.php:190
+msgid "Number or reference"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:123
-msgid "Reorder at / up to"
+#: src/Admin/PurchaseOrdersScreen.php:193
+#: src/Admin/RequirementsScreen.php:395
+msgid "Any supplier"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:124
-msgid "Sold 7 / 30 / 90"
+#: src/Admin/PurchaseOrdersScreen.php:202
+msgid "Any status"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:126
-#: src/Admin/RequirementsScreen.php:471
-msgid "To order"
+#: src/Admin/PurchaseOrdersScreen.php:212
+msgid "Late"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:127
-#: src/Admin/RequirementsScreen.php:473
+#: src/Admin/PurchaseOrdersScreen.php:215
+#: src/Admin/RequirementsScreen.php:418
+msgid "Filter"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:222
+msgid "Number"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:224
+#: src/Admin/PurchaseOrdersScreen.php:419
+msgid "Ordered"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:225
+#: src/Admin/PurchaseOrdersScreen.php:357
+#: src/Admin/PurchaseOrdersScreen.php:488
+msgid "Expected"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:226
+#: src/Admin/PurchaseOrdersScreen.php:472
+msgid "Total"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:227
+#: src/Admin/RequirementsScreen.php:141
+#: src/Admin/RequirementsScreen.php:507
 #: src/Admin/SuppliersScreen.php:207
 #: src/Admin/SuppliersScreen.php:947
 msgid "Status"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:145
+#: src/Admin/PurchaseOrdersScreen.php:234
+msgid "No purchase order yet. Start one from the reordering screen, or add one by hand."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:265
+msgid "late"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:310
+#: src/Admin/PurchaseOrdersScreen.php:626
+#: src/Admin/RequirementsScreen.php:555
+msgid "You are not allowed to create purchase orders."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:320
+msgid "There are no suppliers yet."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:331
+msgid "Choose who it is for. The articles are added on the next screen, from that supplier's price list."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:351
+msgid "Order date"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:360
+msgid "Left empty, it is worked out from the supplier's lead time."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:367
+msgid "Start the order"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:368
+#: src/Admin/PurchaseOrdersScreen.php:1004
+#: src/Admin/SuppliersScreen.php:467
+#: src/Admin/SuppliersScreen.php:599
+msgid "Cancel"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:389
+#: src/Admin/PurchaseOrdersScreen.php:1111
+msgid "Back to the list"
+msgstr ""
+
+#. translators: 1: order date, 2: expected date.
+#: src/Admin/PurchaseOrdersScreen.php:399
+#, php-format
+msgid "Ordered %1$s, expected %2$s"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:417
+#: src/Admin/PurchaseOrdersScreen.php:549
+#: src/Admin/RequirementsScreen.php:135
+#: src/Admin/RequirementsScreen.php:490
+msgid "Article"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:420
+#: src/Admin/PurchaseOrdersScreen.php:985
+msgid "Received"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:421
+#: src/Admin/RequirementsScreen.php:502
+msgid "Unit cost"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:422
+msgid "Line total"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:430
+msgid "Nothing on this order yet."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:484
+msgid "Details"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:492
+msgid "Their reference"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:496
+msgid "Notes for the supplier"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:500
+msgid "Notes for us"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:507
+msgid "Save the order"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:545
+msgid "Add from the price list"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:552
+msgid "Quantity"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:570
+msgid "Fill in a quantity and save. Quantities are taken as they are typed here: the supplier's minimum and multiple are applied on the reordering screen, not to a line somebody has decided by hand."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:694
+#: src/Admin/PurchaseOrdersScreen.php:784
+msgid "You are not allowed to change purchase orders."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:795
+msgid "You are not allowed to send purchase orders."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:980
+msgid "Draft"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:981
+msgid "To send"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:982
+msgid "Sent"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:983
+msgid "Confirmed"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:984
+#: src/Admin/PurchaseOrdersScreen.php:1002
+msgid "Partly received"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:986
+msgid "Cancelled"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:998
+msgid "Back to draft"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:999
+msgid "Ready to send"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1000
+msgid "Mark as sent"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1001
+msgid "Supplier confirmed"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1003
+msgid "All received"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1110
+#: src/Admin/PurchaseOrdersScreen.php:1133
+msgid "That purchase order no longer exists."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1129
+msgid "Purchase order started. Add what you want to buy."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1130
+msgid "Purchase order saved."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1131
+msgid "Purchase order updated."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1132
+msgid "Draft purchase orders created, one per supplier."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1134
+msgid "Choose a supplier first."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1135
+msgid "That order has already gone out, so its lines cannot be changed."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1136
+msgid "A purchase order cannot go from where it is to there."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1137
+msgid "That could not be saved. Nothing was changed."
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:79
+msgid "Reordering"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:118
+msgid "What to reorder"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:136
+#: src/Admin/RequirementsScreen.php:494
+msgid "Available"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:137
+msgid "Reorder at / up to"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:138
+msgid "Sold 7 / 30 / 90"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:140
+#: src/Admin/RequirementsScreen.php:505
+msgid "To order"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:159
+msgid "Create purchase orders from the ticked rows"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:162
 msgid "Export what is shown (CSV)"
 msgstr ""
 
+#: src/Admin/RequirementsScreen.php:168
+msgid "One draft order per supplier, grouped for you. Nothing is sent: a suggestion that posts itself is a suggestion nobody trusts."
+msgstr ""
+
 #. translators: 1: stock on the shelf, 2: units held for orders being paid for.
-#: src/Admin/RequirementsScreen.php:207
+#: src/Admin/RequirementsScreen.php:241
 #, php-format
 msgid "%1$d on the shelf, %2$d held"
 msgstr ""
 
 #. translators: %d: units already ordered from a supplier.
-#: src/Admin/RequirementsScreen.php:221
+#: src/Admin/RequirementsScreen.php:255
 #, php-format
 msgid "%d on the way"
 msgstr ""
 
 #. translators: 1: unit cost, 2: lead time in days.
-#: src/Admin/RequirementsScreen.php:245
+#: src/Admin/RequirementsScreen.php:279
 #, php-format
 msgid "%1$s each, %2$d days"
 msgstr ""
 
 #. translators: %d: units actually short.
-#: src/Admin/RequirementsScreen.php:268
+#: src/Admin/RequirementsScreen.php:302
 #, php-format
 msgid "%d short, rounded up to the supplier terms"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:292
+#: src/Admin/RequirementsScreen.php:326
 msgid "Fine"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:293
+#: src/Admin/RequirementsScreen.php:327
 msgid "Below reorder point"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:294
+#: src/Admin/RequirementsScreen.php:328
 msgid "Out of stock"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:295
+#: src/Admin/RequirementsScreen.php:329
 msgid "No supplier"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:296
+#: src/Admin/RequirementsScreen.php:330
 msgid "No cost"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:297
+#: src/Admin/RequirementsScreen.php:331
 msgid "Not tracked"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:322
+#: src/Admin/RequirementsScreen.php:356
 msgid "The sales figures on this page are not complete."
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:323
+#: src/Admin/RequirementsScreen.php:357
 msgid "WooCommerce keeps them in a separate table that it fills in the background, and on this shop it is empty while there are orders. Until it has been filled, every article here looks as if it has sold nothing."
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:327
+#: src/Admin/RequirementsScreen.php:361
 msgid "See what is queued"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:331
+#: src/Admin/RequirementsScreen.php:365
 msgid "Import historical data"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:354
+#: src/Admin/RequirementsScreen.php:388
 msgid "Search articles"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:358
+#: src/Admin/RequirementsScreen.php:392
 msgid "Name or SKU"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:361
-msgid "Any supplier"
-msgstr ""
-
-#: src/Admin/RequirementsScreen.php:374
+#: src/Admin/RequirementsScreen.php:408
 msgid "Any category"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:384
-msgid "Filter"
-msgstr ""
-
-#: src/Admin/RequirementsScreen.php:390
+#: src/Admin/RequirementsScreen.php:424
 msgid "Only below the reorder point"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:395
+#: src/Admin/RequirementsScreen.php:429
 msgid "Only out of stock"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:400
+#: src/Admin/RequirementsScreen.php:434
 msgid "Only without a supplier"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:405
+#: src/Admin/RequirementsScreen.php:439
 msgid "Only without a cost"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:428
+#: src/Admin/RequirementsScreen.php:462
 msgid "Nothing matches those filters."
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:433
+#: src/Admin/RequirementsScreen.php:467
 msgid "No article has stock management switched on, so there is nothing to reorder yet."
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:445
+#: src/Admin/RequirementsScreen.php:479
 msgid "You are not allowed to export this."
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:455
+#: src/Admin/RequirementsScreen.php:489
 msgid "SKU"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:457
+#: src/Admin/RequirementsScreen.php:491
 msgid "Stock"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:458
+#: src/Admin/RequirementsScreen.php:492
 msgid "Reserved"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:459
+#: src/Admin/RequirementsScreen.php:493
 msgid "On the way"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:461
+#: src/Admin/RequirementsScreen.php:495
 msgid "Reorder point"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:462
+#: src/Admin/RequirementsScreen.php:496
 msgid "Target"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:463
+#: src/Admin/RequirementsScreen.php:497
 msgid "Sold 7"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:464
+#: src/Admin/RequirementsScreen.php:498
 msgid "Sold 30"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:465
+#: src/Admin/RequirementsScreen.php:499
 msgid "Sold 90"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:467
+#: src/Admin/RequirementsScreen.php:501
 msgid "Supplier code"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:468
-msgid "Unit cost"
-msgstr ""
-
-#: src/Admin/RequirementsScreen.php:469
+#: src/Admin/RequirementsScreen.php:503
 #: src/Admin/SuppliersScreen.php:999
 msgid "Currency"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:470
+#: src/Admin/RequirementsScreen.php:504
 msgid "Short"
 msgstr ""
 
-#: src/Admin/RequirementsScreen.php:472
+#: src/Admin/RequirementsScreen.php:506
 msgid "Order value"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:606
+msgid "Tick the rows you want to order first."
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:607
+msgid "Nothing on those rows could be ordered: they have no supplier, or nothing is missing."
 msgstr ""
 
 #: src/Admin/SuppliersScreen.php:100
@@ -447,11 +710,6 @@ msgstr ""
 
 #: src/Admin/SuppliersScreen.php:465
 msgid "Save supplier"
-msgstr ""
-
-#: src/Admin/SuppliersScreen.php:467
-#: src/Admin/SuppliersScreen.php:599
-msgid "Cancel"
 msgstr ""
 
 #: src/Admin/SuppliersScreen.php:548

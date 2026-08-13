@@ -294,6 +294,55 @@ check "e le colonne dell'ordine" "$CSV" "To order"
 check "e i dati del negozio" "$CSV" "MOUSE-X"
 
 echo
+echo "== gli ordini fornitore =="
+ORDERS="$BASE/wp-admin/admin.php?page=oxysuppliers&tab=orders"
+LIST=$(get admin "$ORDERS")
+check "la linguetta si apre" "$LIST" "Purchase orders"
+check "e dice che non ce n'e' ancora nessuno" "$LIST" "No purchase order yet"
+
+NEW=$(get admin "$ORDERS&action=new")
+check "il modulo per iniziarne uno" "$NEW" "Start the order"
+check "con il fornitore da scegliere" "$NEW" "Fornitore Del Pannello"
+
+NONCE=$(nonce_from "$NEW")
+SUPPLIER_ID=$(printf '%s' "$NEW" | grep -o '<option value="[0-9]*">Fornitore Del Pannello' | grep -o '[0-9]*' | head -1)
+CREATED=$(post admin "$ADMIN_POST" "action=oxysuppliers_create_order&_wpnonce=$NONCE&supplier_id=$SUPPLIER_ID&order_date=2026-08-13&expected_date=")
+check "l'ordine viene creato" "$CREATED" "Purchase order started"
+check "con un numero suo" "$CREATED" "PO-$(date +%Y)-"
+check "ed e' una bozza" "$CREATED" "Draft"
+
+echo
+echo "== solo le mosse che la macchina a stati permette =="
+check "una bozza si puo' annullare" "$CREATED" "Cancel"
+check_absent "ma non si puo' dichiarare ricevuta" "$CREATED" "All received"
+
+# An empty order has nothing to tell a supplier, so the button is not drawn.
+check_absent "e nemmeno inviare, perche' e' vuota" "$CREATED" "Mark as sent"
+
+ORDER_ID=$(printf '%s' "$CREATED" | grep -o 'action=view&#038;id=[0-9]*' | head -1 | grep -o '[0-9]*$')
+
+if [ -z "$ORDER_ID" ]; then
+	ORDER_ID=$(sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp db query 'SELECT id FROM oxs_oxysuppliers_purchase_orders ORDER BY id DESC LIMIT 1' --skip-column-names")
+fi
+
+CANCEL=$(printf '%s' "$CREATED" | grep -o "admin-post.php?action=oxysuppliers_order_status&#038;id=$ORDER_ID&#038;status=cancelled&#038;_wpnonce=[a-z0-9]*" | head -1 | sed 's/&#038;/\&/g')
+CANCELLED=$(get admin "$BASE/wp-admin/$CANCEL")
+check "annullandolo lo dice" "$CANCELLED" "Cancelled"
+check_absent "e non offre piu' nessuna mossa" "$CANCELLED" "Supplier confirmed"
+
+echo
+echo "== e senza nonce non si muove niente =="
+NO_NONCE=$(status_of admin "$ADMIN_POST?action=oxysuppliers_order_status&id=$ORDER_ID&status=sent")
+if [ "$NO_NONCE" = "403" ]; then
+	pass "un cambio di stato senza nonce viene rifiutato (403)"
+else
+	fail "un cambio di stato senza nonce viene rifiutato (ho avuto $NO_NONCE)"
+fi
+
+ORDERS_AS_EDITOR=$(get editor "$ORDERS")
+check_absent "un editor non vede gli ordini" "$ORDERS_AS_EDITOR" "New purchase order"
+
+echo
 echo "== ==============================="
 echo "== superati: $PASSED   falliti: $FAILED"
 rm -rf "$JARS"

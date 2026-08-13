@@ -53,7 +53,7 @@ linea guida 5 di WordPress.org sul trialware.
 
 ## Stato
 
-**13/08/2026 — Sprint 1, 2 e 3 chiusi**, verdi in CI e provati su un negozio
+**13/08/2026 — Sprint 1, 2, 3 e 4 chiusi**, verdi in CI e provati su un negozio
 vero.
 
 | | |
@@ -61,13 +61,16 @@ vero.
 | Sprint 1 | fondamenta, otto tabelle, capability, anagrafica fornitori, audit log |
 | Sprint 2 | listini prodotto-fornitore, arrotondamento delle quantità, fornitore preferenziale, pannello sulla scheda prodotto |
 | Sprint 3 | schermata dei fabbisogni, vendite 7/30/90, merce in arrivo, esportazione CSV |
-| Prove | 65 unit su PHP 8.1→8.4, 35 dentro WordPress 7.0.4, 62 via HTTP, 39 sul negozio seminato |
+| Sprint 4 | ordini fornitore, numerazione unica, macchina a stati, proposte raggruppate per fornitore |
+| Prove | 89 unit su PHP 8.1→8.4, 57 dentro WordPress 7.0.4, 76 via HTTP, 65 sul negozio seminato |
 | Qualità | PHPCS, PHPStan livello 8 e Plugin Check puliti |
 
-La schermata dei fabbisogni costa **sette query, che siano cinque righe o
-duecento**.
+Due numeri che vale la pena tenere d'occhio: la schermata dei fabbisogni costa
+**sette query, che siano cinque righe o duecento**, e due ordini salvati nello
+stesso istante ottengono **due numeri diversi**, perché a deciderlo è l'indice
+unico e non un contatore.
 
 Banco di prova: <https://test.44123.it/oxysuppliers> (WooCommerce 11, HPOS
 attivo). Deploy con `scripts\deploy-test-site.ps1`.
 
-Prossimo passo: Sprint 4, gli ordini fornitore.
+Prossimo passo: Sprint 5, PDF ed email.

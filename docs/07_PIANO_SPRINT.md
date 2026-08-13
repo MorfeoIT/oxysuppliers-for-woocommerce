@@ -65,6 +65,27 @@ fornitore**.
 transizione di stato non prevista viene rifiutata dal dominio, non
 dall'interfaccia.
 
+**Fatto il 13/08/2026.** Tutti e due i criteri provati, in CI e sul banco.
+
+Il numero **non si prenota**: si propone guardando il più alto già usato
+quest'anno, e a decidere è l'**indice unico**. Due salvataggi nello stesso
+istante propongono lo stesso numero, un INSERT fallisce, e chi ha perso la corsa
+ne chiede un altro. Un contatore in un'opzione perderebbe uno dei due, e in
+silenzio.
+
+La macchina a stati sta in `PurchaseOrderStatus::allowed_next()`, non nella
+schermata: i bottoni si disegnano da lì, e una mossa raggiunta in altro modo —
+una pagina vecchia, un indirizzo scritto a mano — viene rifiutata prima che si
+scriva qualcosa. Due regole meno ovvie: un ordine **annullato resta annullato**
+(riaprirlo nasconderebbe che è stato annullato), e uno **ricevuto può tornare
+parzialmente ricevuto**, perché annullare una ricezione deve poter lasciare
+l'ordine a dire qualcosa di vero.
+
+Da qui la colonna «in arrivo» dei fabbisogni smette di essere sempre zero: una
+**bozza non conta** (è un pensiero, non un ordine, e contarla impedirebbe di
+ordinare quello che si stava per ordinare), un ordine inviato sì, e uno
+annullato smette.
+
 ## Sprint 5 — PDF, email, log
 
 PDF con template sovrascrivibile, servito da un endpoint protetto. Invio email
