@@ -86,9 +86,14 @@ final class PurchaseOrderRepositoryTest extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_stores_an_order_with_its_lines(): void {
+		global $wpdb;
+
 		$stored = $this->orders->create( $this->draft() );
 
-		$this->assertNotNull( $stored );
+		$this->assertNotNull(
+			$stored,
+			'last_error: ' . $wpdb->last_error . ' | last_query: ' . $wpdb->last_query
+		);
 		$this->assertGreaterThan( 0, $stored->id );
 		$this->assertNotSame( '', $stored->number );
 		$this->assertCount( 1, $stored->lines );
