@@ -202,6 +202,35 @@ final class SupplierProductRepository {
 	}
 
 	/**
+	 * Everything one supplier sells.
+	 *
+	 * @param int $supplier_id Supplier id.
+	 * @param int $limit       How many at most.
+	 * @return list<SupplierProduct>
+	 */
+	public function for_supplier( int $supplier_id, int $limit = 200 ): array {
+		global $wpdb;
+
+		$table = Tables::name( Tables::SUPPLIER_PRODUCTS );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table from a constant, every value bound.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$table} WHERE supplier_id = %d ORDER BY supplier_sku ASC, id ASC LIMIT %d",
+				$supplier_id,
+				max( 1, min( 500, $limit ) )
+			),
+			ARRAY_A
+		);
+
+		if ( ! is_array( $rows ) ) {
+			return array();
+		}
+
+		return array_values( array_map( array( $this, 'hydrate' ), $rows ) );
+	}
+
+	/**
 	 * The supplier to buy this article from by default.
 	 *
 	 * Falls back to the cheapest when nobody has been marked preferred, because

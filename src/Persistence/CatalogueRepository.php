@@ -490,6 +490,26 @@ final class CatalogueRepository {
 			$values[]  = $like;
 		}
 
+		// A named set of articles, which is how the reordering screen turns
+		// what somebody ticked into an order. The pairs come from the page they
+		// were looking at, and they are re-read here rather than trusted: the
+		// quantities have to be worked out from the stock as it is now, not
+		// from numbers that were on a screen a minute ago.
+		$articles = (array) ( $args['articles'] ?? array() );
+
+		if ( array() !== $articles ) {
+			$pairs = array();
+
+			foreach ( $articles as $article ) {
+				$pairs[]  = "( CASE WHEN p.post_type = 'product_variation' THEN p.post_parent ELSE l.product_id END = %d
+					AND CASE WHEN p.post_type = 'product_variation' THEN l.product_id ELSE 0 END = %d )";
+				$values[] = (int) $article[0];
+				$values[] = (int) $article[1];
+			}
+
+			$clauses[] = '( ' . implode( ' OR ', $pairs ) . ' )';
+		}
+
 		if ( ! empty( $args['below_reorder_point'] ) ) {
 			$clauses[] = "CAST( l.stock_quantity AS SIGNED ) <= CAST( COALESCE( NULLIF( lsa.meta_value, '' ), %d ) AS SIGNED )";
 			$values[]  = $this->default_reorder_point();

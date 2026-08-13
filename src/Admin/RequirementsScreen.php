@@ -15,6 +15,7 @@ use Oxysoft\OxySuppliers\Engine\RequirementCalculator;
 use Oxysoft\OxySuppliers\Export\CsvWriter;
 use Oxysoft\OxySuppliers\Persistence\CatalogueRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierRepository;
+use Oxysoft\OxySuppliers\Service\ProposalBuilder;
 use Oxysoft\OxySuppliers\Support\Capabilities;
 
 /**
@@ -29,7 +30,8 @@ final class RequirementsScreen implements Screen {
 
 	public const SLUG = 'requirements';
 
-	public const EXPORT_ACTION = 'oxysuppliers_export_requirements';
+	public const EXPORT_ACTION  = 'oxysuppliers_export_requirements';
+	public const PROPOSE_ACTION = 'oxysuppliers_propose_orders';
 
 	/**
 	 * How many articles a page holds.
@@ -49,11 +51,13 @@ final class RequirementsScreen implements Screen {
 	 * @param CatalogueRepository   $catalogue  Stock, sales and thresholds.
 	 * @param RequirementCalculator $calculator The suggestion.
 	 * @param SupplierRepository    $suppliers  For the supplier filter.
+	 * @param ProposalBuilder       $proposals  Turns ticked rows into drafts.
 	 */
 	public function __construct(
 		private readonly CatalogueRepository $catalogue,
 		private readonly RequirementCalculator $calculator,
-		private readonly SupplierRepository $suppliers
+		private readonly SupplierRepository $suppliers,
+		private readonly ProposalBuilder $proposals
 	) {
 	}
 
@@ -91,6 +95,7 @@ final class RequirementsScreen implements Screen {
 	 */
 	public function register(): void {
 		add_action( 'admin_post_' . self::EXPORT_ACTION, array( $this, 'handle_export' ) );
+		add_action( 'admin_post_' . self::PROPOSE_ACTION, array( $this, 'handle_propose' ) );
 	}
 
 	/**
@@ -103,21 +108,30 @@ final class RequirementsScreen implements Screen {
 			wp_die( esc_html__( 'You are not allowed to see this page.', 'oxysuppliers-for-woocommerce' ), 403 );
 		}
 
-		$query = $this->query_from_request();
-		$rows  = $this->calculator->calculate_all( $this->catalogue->paginate( $query ) );
-		$total = $this->catalogue->count( $query );
-		$pages = (int) ceil( $total / self::PER_PAGE );
+		$query     = $this->query_from_request();
+		$rows      = $this->calculator->calculate_all( $this->catalogue->paginate( $query ) );
+		$total     = $this->catalogue->count( $query );
+		$pages     = (int) ceil( $total / self::PER_PAGE );
+		$can_order = current_user_can( Capabilities::CREATE_ORDERS );
 
 		?>
 		<h1 class="wp-heading-inline"><?php esc_html_e( 'What to reorder', 'oxysuppliers-for-woocommerce' ); ?></h1>
 		<hr class="wp-header-end">
 
+		<?php $this->render_notice(); ?>
 		<?php $this->render_sales_warning(); ?>
 		<?php $this->render_filters( $query ); ?>
+
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+		<input type="hidden" name="action" value="<?php echo esc_attr( self::PROPOSE_ACTION ); ?>">
+		<?php wp_nonce_field( self::PROPOSE_ACTION ); ?>
 
 		<table class="wp-list-table widefat fixed striped oxysuppliers-requirements">
 			<thead>
 				<tr>
+					<?php if ( $can_order ) : ?>
+						<td class="check-column"></td>
+					<?php endif; ?>
 					<th scope="col"><?php esc_html_e( 'Article', 'oxysuppliers-for-woocommerce' ); ?></th>
 					<th scope="col"><?php esc_html_e( 'Available', 'oxysuppliers-for-woocommerce' ); ?></th>
 					<th scope="col"><?php esc_html_e( 'Reorder at / up to', 'oxysuppliers-for-woocommerce' ); ?></th>
@@ -130,21 +144,31 @@ final class RequirementsScreen implements Screen {
 			<tbody>
 			<?php if ( array() === $rows ) : ?>
 				<tr>
-					<td colspan="7"><?php $this->render_empty_message( $query ); ?></td>
+					<td colspan="8"><?php $this->render_empty_message( $query ); ?></td>
 				</tr>
 			<?php endif; ?>
 
 			<?php foreach ( $rows as $row ) : ?>
-				<?php $this->render_row( $row ); ?>
+				<?php $this->render_row( $row, $can_order ); ?>
 			<?php endforeach; ?>
 			</tbody>
 		</table>
 
 		<p>
+			<?php if ( $can_order ) : ?>
+				<?php submit_button( __( 'Create purchase orders from the ticked rows', 'oxysuppliers-for-woocommerce' ), 'primary', 'submit', false ); ?>
+			<?php endif; ?>
 			<a class="button" href="<?php echo esc_url( $this->export_url( $query ) ); ?>">
 				<?php esc_html_e( 'Export what is shown (CSV)', 'oxysuppliers-for-woocommerce' ); ?>
 			</a>
 		</p>
+
+		<?php if ( $can_order ) : ?>
+			<p class="description">
+				<?php esc_html_e( 'One draft order per supplier, grouped for you. Nothing is sent: a suggestion that posts itself is a suggestion nobody trusts.', 'oxysuppliers-for-woocommerce' ); ?>
+			</p>
+		<?php endif; ?>
+		</form>
 
 		<?php if ( $pages > 1 ) : ?>
 			<div class="tablenav">
@@ -172,10 +196,11 @@ final class RequirementsScreen implements Screen {
 	/**
 	 * One article.
 	 *
-	 * @param Requirement $row The answer for it.
+	 * @param Requirement $row       The answer for it.
+	 * @param bool        $can_order Whether this user may turn it into an order.
 	 * @return void
 	 */
-	private function render_row( Requirement $row ): void {
+	private function render_row( Requirement $row, bool $can_order = false ): void {
 		$article  = $row->context;
 		$supplier = $article->supplier;
 
@@ -184,6 +209,15 @@ final class RequirementsScreen implements Screen {
 
 		?>
 		<tr>
+			<?php if ( $can_order ) : ?>
+				<th scope="row" class="check-column">
+					<?php if ( $row->is_orderable() ) : ?>
+						<input type="checkbox" name="articles[]"
+							value="<?php echo esc_attr( $article->key() ); ?>"
+							<?php checked( $row->status->needs_attention() ); ?>>
+					<?php endif; ?>
+				</th>
+			<?php endif; ?>
 			<td>
 				<strong>
 					<?php if ( $edit ) : ?>
@@ -503,6 +537,84 @@ final class RequirementsScreen implements Screen {
 		}
 
 		( new CsvWriter() )->send( 'oxysuppliers-reordering', $columns, $lines );
+	}
+
+	/**
+	 * Turn the ticked rows into draft purchase orders.
+	 *
+	 * The quantities are **worked out again here**, from the stock as it is
+	 * now. What was on the screen a minute ago was true a minute ago, and an
+	 * order placed from a stale number is an order for the wrong amount.
+	 *
+	 * @return void
+	 */
+	public function handle_propose(): void {
+		check_admin_referer( self::PROPOSE_ACTION );
+
+		if ( ! current_user_can( Capabilities::CREATE_ORDERS ) ) {
+			wp_die( esc_html__( 'You are not allowed to create purchase orders.', 'oxysuppliers-for-woocommerce' ), 403 );
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Checked above.
+		$ticked = isset( $_POST['articles'] ) ? map_deep( wp_unslash( $_POST['articles'] ), 'sanitize_text_field' ) : array();
+
+		$articles = array();
+
+		foreach ( (array) $ticked as $key ) {
+			$parts = explode( ':', (string) $key );
+
+			if ( 2 === count( $parts ) && (int) $parts[0] > 0 ) {
+				$articles[] = array( (int) $parts[0], (int) $parts[1] );
+			}
+		}
+
+		if ( array() === $articles ) {
+			wp_safe_redirect( Menu::url( self::SLUG, array( 'notice' => 'nothing_ticked' ) ) );
+			exit;
+		}
+
+		$rows = $this->calculator->calculate_all(
+			$this->catalogue->paginate(
+				array(
+					'articles' => $articles,
+					'per_page' => 500,
+				)
+			)
+		);
+
+		$made = $this->proposals->build( $rows, gmdate( 'Y-m-d' ) );
+
+		if ( array() === $made ) {
+			wp_safe_redirect( Menu::url( self::SLUG, array( 'notice' => 'nothing_to_order' ) ) );
+			exit;
+		}
+
+		wp_safe_redirect( Menu::url( PurchaseOrdersScreen::SLUG, array( 'notice' => 'proposed' ) ) );
+		exit;
+	}
+
+	/**
+	 * Show whatever the last action left behind.
+	 *
+	 * @return void
+	 */
+	private function render_notice(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Displays a fixed message chosen from a list.
+		$notice = isset( $_GET['notice'] ) ? sanitize_key( wp_unslash( $_GET['notice'] ) ) : '';
+
+		$messages = array(
+			'nothing_ticked'   => __( 'Tick the rows you want to order first.', 'oxysuppliers-for-woocommerce' ),
+			'nothing_to_order' => __( 'Nothing on those rows could be ordered: they have no supplier, or nothing is missing.', 'oxysuppliers-for-woocommerce' ),
+		);
+
+		if ( ! isset( $messages[ $notice ] ) ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
+			esc_html( $messages[ $notice ] )
+		);
 	}
 
 	/**

@@ -64,4 +64,70 @@ enum PurchaseOrderStatus: string {
 	public static function from_storage( string $value ): self {
 		return self::tryFrom( $value ) ?? self::DRAFT;
 	}
+
+	/**
+	 * Where an order in this state is allowed to go next.
+	 *
+	 * The rules live here rather than in the screen that draws the buttons,
+	 * because a screen can only stop the transitions it knows about and this
+	 * has to stop them all: the same order is also moved by a receipt, by an
+	 * email being sent, and one day by an add-on.
+	 *
+	 * @return list<self>
+	 */
+	public function allowed_next(): array {
+		return match ( $this ) {
+			self::DRAFT => array( self::TO_SEND, self::SENT, self::CANCELLED ),
+			self::TO_SEND => array( self::SENT, self::DRAFT, self::CANCELLED ),
+			self::SENT => array( self::CONFIRMED, self::PARTIALLY_RECEIVED, self::RECEIVED, self::CANCELLED ),
+			self::CONFIRMED => array( self::PARTIALLY_RECEIVED, self::RECEIVED, self::CANCELLED ),
+
+			// Cancelling a partly received order is closing it short, which is
+			// a real thing a shop does when the rest is never coming.
+			self::PARTIALLY_RECEIVED => array( self::RECEIVED, self::CANCELLED ),
+
+			// Not a dead end, and deliberately so: reversing a receipt has to
+			// be able to put a fully received order back to partly received,
+			// or the reversal would leave the order saying something untrue.
+			self::RECEIVED => array( self::PARTIALLY_RECEIVED ),
+
+			// A cancelled order stays cancelled. Re-opening one hides the fact
+			// that it was cancelled; the shop makes a new order instead.
+			self::CANCELLED => array(),
+		};
+	}
+
+	/**
+	 * Whether an order in this state may move to that one.
+	 *
+	 * Staying put is always allowed: saving an order without touching its
+	 * state is not a transition.
+	 *
+	 * @param self $next Where it wants to go.
+	 * @return bool
+	 */
+	public function can_move_to( self $next ): bool {
+		return $this === $next || in_array( $next, $this->allowed_next(), true );
+	}
+
+	/**
+	 * Whether the order can still be changed.
+	 *
+	 * Once anything has been received, the lines are part of a story that has
+	 * already happened.
+	 *
+	 * @return bool
+	 */
+	public function is_editable(): bool {
+		return in_array( $this, array( self::DRAFT, self::TO_SEND ), true );
+	}
+
+	/**
+	 * Whether this is the end of the line.
+	 *
+	 * @return bool
+	 */
+	public function is_final(): bool {
+		return self::CANCELLED === $this;
+	}
 }

@@ -11,6 +11,7 @@ namespace Oxysoft\OxySuppliers;
 
 use Oxysoft\OxySuppliers\Admin\Menu;
 use Oxysoft\OxySuppliers\Admin\ProductSupplierPanel;
+use Oxysoft\OxySuppliers\Admin\PurchaseOrdersScreen;
 use Oxysoft\OxySuppliers\Admin\RequirementsScreen;
 use Oxysoft\OxySuppliers\Admin\SuppliersScreen;
 use Oxysoft\OxySuppliers\Domain\SupplierProductValidator;
@@ -20,9 +21,12 @@ use Oxysoft\OxySuppliers\Engine\RequirementStrategy;
 use Oxysoft\OxySuppliers\Engine\TargetStockStrategy;
 use Oxysoft\OxySuppliers\Persistence\CatalogueRepository;
 use Oxysoft\OxySuppliers\Persistence\Migrator;
+use Oxysoft\OxySuppliers\Persistence\PurchaseOrderRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierProductRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierRepository;
 use Oxysoft\OxySuppliers\Service\AuditLogger;
+use Oxysoft\OxySuppliers\Service\ProposalBuilder;
+use Oxysoft\OxySuppliers\Service\PurchaseOrderNumbers;
 use Oxysoft\OxySuppliers\Support\Capabilities;
 
 /**
@@ -52,7 +56,9 @@ final class Plugin {
 
 		if ( is_admin() ) {
 			$suppliers = new SupplierRepository();
+			$listings  = new SupplierProductRepository();
 			$audit     = new AuditLogger();
+			$orders    = new PurchaseOrderRepository( new PurchaseOrderNumbers() );
 
 			$menu = new Menu();
 
@@ -62,18 +68,18 @@ final class Plugin {
 				new RequirementsScreen(
 					new CatalogueRepository(),
 					new RequirementCalculator( $this->requirement_strategy() ),
-					$suppliers
+					$suppliers,
+					new ProposalBuilder( $orders, $suppliers )
 				)
 			);
 
-			$menu->add_tab(
-				new SuppliersScreen( $suppliers, new SupplierValidator(), $audit )
-			);
+			$menu->add_tab( new PurchaseOrdersScreen( $orders, $suppliers, $listings, $audit ) );
+			$menu->add_tab( new SuppliersScreen( $suppliers, new SupplierValidator(), $audit ) );
 
 			$menu->register();
 
 			( new ProductSupplierPanel(
-				new SupplierProductRepository(),
+				$listings,
 				$suppliers,
 				new SupplierProductValidator(),
 				$audit
