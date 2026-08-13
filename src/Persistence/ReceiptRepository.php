@@ -307,7 +307,7 @@ final class ReceiptRepository {
 			$wpdb->prepare(
 				"SELECT l.id, l.receipt_id, l.qty, l.actual_unit_cost_minor, l.currency,
 				        r.received_at, r.reference, r.reverses_receipt_id,
-				        o.id AS po_id, o.number AS po_number, o.supplier_id
+				        o.id AS po_id, o.po_number, o.supplier_id
 				   FROM {$lines} l
 				   INNER JOIN {$receipts} r ON r.id = l.receipt_id
 				   INNER JOIN {$orders} o ON o.id = r.po_id
