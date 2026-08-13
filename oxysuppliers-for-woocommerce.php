@@ -33,6 +33,29 @@ const MIN_PHP     = '8.1';
 const MIN_WC      = '9.0';
 
 /**
+ * The contract other plugins may build on.
+ *
+ * Separate from VERSION, and it moves for different reasons: this one only
+ * changes when what a plugin standing on us can rely on changes. Read as a
+ * caret constraint — the minor goes up when something is added, the major when
+ * something already published stops meaning what it meant.
+ *
+ * What 1.0 promises:
+ *
+ * - `Engine\RequirementStrategy`, and the filter `oxysuppliers_requirement_strategy`
+ *   that chooses which one is used;
+ * - `Domain\RequirementContext`, the facts handed to it;
+ * - the action `oxysuppliers_cost_changed`, fired when what an article costs
+ *   changes;
+ * - `Persistence\CostHistoryRepository`, the record of what was really paid.
+ *
+ * The paid add-on checks this before doing anything at all. A newer major here
+ * means it must refuse to run, rather than find out halfway through a request
+ * which of its assumptions has stopped holding.
+ */
+const API_VERSION = '1.0';
+
+/**
  * Absolute path to the plugin directory, with a trailing slash.
  *
  * @return string
