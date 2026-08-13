@@ -262,6 +262,38 @@ PRODUCT_AS_EDITOR=$(get editor "$BASE/wp-admin/post.php?post=$PRODUCT_ID&action=
 check_absent "un editor non vede il pannello" "$PRODUCT_AS_EDITOR" "oxysuppliers_product_data"
 
 echo
+echo "== la schermata dei fabbisogni =="
+REQUIREMENTS="$BASE/wp-admin/admin.php?page=oxysuppliers&tab=requirements"
+NEEDS=$(get admin "$REQUIREMENTS")
+check "si apre" "$NEEDS" "What to reorder"
+check "ed e' la prima linguetta" "$NEEDS" "tab=requirements"
+check "con le colonne che servono" "$NEEDS" "Reorder at / up to"
+check "e i venduti" "$NEEDS" "Sold 7 / 30 / 90"
+check "mostra un articolo vero del negozio" "$NEEDS" "MOUSE-X"
+check "col bottone per esportare" "$NEEDS" "Export what is shown"
+
+FILTERED=$(get admin "$REQUIREMENTS&no_supplier=1")
+check "il filtro senza fornitore risponde" "$FILTERED" "Only without a supplier"
+
+NOTHING=$(get admin "$REQUIREMENTS&s=zzzznessunarticolo")
+check "e una ricerca a vuoto lo dice" "$NOTHING" "Nothing matches those filters"
+
+NEEDS_AS_EDITOR=$(status_of editor "$REQUIREMENTS")
+if [ "$NEEDS_AS_EDITOR" = "403" ] || ! printf '%s' "$(get editor "$REQUIREMENTS")" | grep -qF "What to reorder"; then
+	pass "un editor non la vede"
+else
+	fail "un editor non la vede"
+fi
+
+echo
+echo "== l'esportazione =="
+EXPORT=$(printf '%s' "$NEEDS" | grep -o 'admin-post.php?action=oxysuppliers_export_requirements[^"]*' | head -1 | sed 's/&#038;/\&/g')
+CSV=$(curl -sS -u "$BASIC" -b "$JARS/admin" -L "$BASE/wp-admin/$EXPORT")
+check "il CSV ha le intestazioni" "$CSV" "SKU"
+check "e le colonne dell'ordine" "$CSV" "To order"
+check "e i dati del negozio" "$CSV" "MOUSE-X"
+
+echo
 echo "== ==============================="
 echo "== superati: $PASSED   falliti: $FAILED"
 rm -rf "$JARS"
