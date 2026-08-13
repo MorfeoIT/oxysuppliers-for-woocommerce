@@ -280,6 +280,51 @@ final class ReceiptRepository {
 	}
 
 	/**
+	 * Every delivery line of one article, newest first.
+	 *
+	 * What was received, when, at what price and against which order — the raw
+	 * material for working out what an article has really cost over time.
+	 *
+	 * **Reversals are in here, with negative quantities**, and that is the
+	 * point: a delivery that was undone has to cancel out, not disappear. A
+	 * caller that filters them out would be averaging deliveries that never
+	 * happened.
+	 *
+	 * @param int $product_id   Parent product.
+	 * @param int $variation_id Variation, 0 for a simple product.
+	 * @param int $limit        How many at most.
+	 * @return list<array<string,mixed>>
+	 */
+	public function lines_for_item( int $product_id, int $variation_id = 0, int $limit = 200 ): array {
+		global $wpdb;
+
+		$receipts = Tables::name( Tables::RECEIPTS );
+		$lines    = Tables::name( Tables::RECEIPT_ITEMS );
+		$orders   = Tables::name( Tables::PURCHASE_ORDERS );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom tables from constants, values bound.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT l.id, l.receipt_id, l.qty, l.actual_unit_cost_minor, l.currency,
+				        r.received_at, r.reference, r.reverses_receipt_id,
+				        o.id AS po_id, o.number AS po_number, o.supplier_id
+				   FROM {$lines} l
+				   INNER JOIN {$receipts} r ON r.id = l.receipt_id
+				   INNER JOIN {$orders} o ON o.id = r.po_id
+				  WHERE l.product_id = %d AND l.variation_id = %d
+				  ORDER BY r.received_at DESC, l.id DESC
+				  LIMIT %d",
+				$product_id,
+				$variation_id,
+				max( 1, min( 500, $limit ) )
+			),
+			ARRAY_A
+		);
+
+		return is_array( $rows ) ? array_values( $rows ) : array();
+	}
+
+	/**
 	 * Take the lock on an order.
 	 *
 	 * A row that says who is writing, rather than `GET_LOCK()` — which behaves

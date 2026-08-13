@@ -27,8 +27,13 @@ final class Migrator {
 	 * article has to leave "we do not know what this costs", and the only way
 	 * to say that in a table where nothing is ever rewritten is a row that says
 	 * nothing.
+	 *
+	 * 3 — an index on the receipt lines by article. They were only ever read by
+	 * order until something started asking "what has this article cost me", and
+	 * a table asked that question without an index answers it by reading itself
+	 * from end to end.
 	 */
-	public const SCHEMA_VERSION = 2;
+	public const SCHEMA_VERSION = 3;
 
 	/**
 	 * Option holding the installed schema version.
@@ -240,7 +245,8 @@ final class Migrator {
 				stock_skipped_reason varchar(40) NOT NULL DEFAULT '',
 				PRIMARY KEY  (id),
 				KEY idx_receipt (receipt_id),
-				KEY idx_po_item (po_item_id)
+				KEY idx_po_item (po_item_id),
+				KEY idx_item (product_id,variation_id)
 			) {$collate};",
 
 			// Written by the free plugin because recording a fact costs nothing

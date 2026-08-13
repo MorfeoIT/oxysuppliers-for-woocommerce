@@ -59,13 +59,20 @@ const MIN_WC      = '9.0';
  * story: an add-on with a screen that belongs next to these ones had nowhere to
  * put it, and the alternative is a second menu entry somewhere else.
  *
- * Both were minors, not majors: nothing already published changed meaning.
+ * 1.3 adds `Persistence\ReceiptRepository::lines_for_item()`: every delivery of
+ * one article, with what it cost and when — including the reversals, with
+ * negative quantities, because a delivery that was undone has to cancel out
+ * rather than disappear. The paid add-on wanted to work out what an article has
+ * really cost and the only way in was reading somebody else's tables directly,
+ * which is the sort of thing that breaks quietly on the next migration.
+ *
+ * All minors, not majors: nothing already published changed meaning.
  *
  * The paid add-on checks this before doing anything at all. A newer major here
  * means it must refuse to run, rather than find out halfway through a request
  * which of its assumptions has stopped holding.
  */
-const API_VERSION = '1.2';
+const API_VERSION = '1.3';
 
 /**
  * Absolute path to the plugin directory, with a trailing slash.
