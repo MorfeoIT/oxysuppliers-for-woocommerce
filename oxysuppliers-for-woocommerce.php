@@ -52,14 +52,20 @@ const MIN_WC      = '9.0';
  * 1.1 adds `oxysuppliers_after_suggested_quantity`, which fires under the
  * quantity on the reordering screen. It exists because the paid add-on went
  * looking for somewhere to show its working and there was nowhere: a suggested
- * quantity nobody can explain is a suggested quantity nobody follows. The minor
- * went up rather than the major because nothing already published changed.
+ * quantity nobody can explain is a suggested quantity nobody follows.
+ *
+ * 1.2 adds `oxysuppliers_register_tabs`, fired while the Purchasing page is
+ * collecting its tabs, and makes `Admin\Screen` part of the contract. Same
+ * story: an add-on with a screen that belongs next to these ones had nowhere to
+ * put it, and the alternative is a second menu entry somewhere else.
+ *
+ * Both were minors, not majors: nothing already published changed meaning.
  *
  * The paid add-on checks this before doing anything at all. A newer major here
  * means it must refuse to run, rather than find out halfway through a request
  * which of its assumptions has stopped holding.
  */
-const API_VERSION = '1.1';
+const API_VERSION = '1.2';
 
 /**
  * Absolute path to the plugin directory, with a trailing slash.

@@ -121,6 +121,26 @@ final class Plugin {
 				)
 			);
 
+			/**
+			 * Fires when the tabs of the Purchasing page are being collected.
+			 *
+			 * An add-on adds its own with `$menu->add_tab( $screen )`, where the
+			 * screen implements this plugin's `Admin\Screen` interface. It fires
+			 * **after** this plugin's own tabs and **before** the menu is
+			 * registered: added here, a tab appears in the bar, gets its address,
+			 * and is hidden from anybody without its capability, exactly like the
+			 * ones above.
+			 *
+			 * The alternative an add-on is left with otherwise is a second
+			 * top-level menu entry for a screen that belongs next to these ones —
+			 * which is how a plugin ends up with its settings in two places.
+			 *
+			 * @since 0.1.0
+			 *
+			 * @param \Oxysoft\OxySuppliers\Admin\Menu $menu The menu being built.
+			 */
+			do_action( 'oxysuppliers_register_tabs', $menu );
+
 			$menu->register();
 
 			( new ProductSupplierPanel(
