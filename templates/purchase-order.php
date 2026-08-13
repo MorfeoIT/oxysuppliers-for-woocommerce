@@ -26,8 +26,10 @@ defined( 'ABSPATH' ) || exit;
  * them would make a template that a theme author copies read like machinery.
  */
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+// phpcs:disable WordPress.WP.GlobalVariablesOverride.Prohibited
 
-/** @var array<string,mixed> $data */
+// The template is included from inside a method, so $data and everything
+// below it are that method's locals: no global called $order is touched.
 $order    = $data['order'];
 $supplier = $data['supplier'];
 $company  = $data['company'];
@@ -49,7 +51,7 @@ $currency = $order->currency;
 		.lines th { background: #f2f2f2; border-bottom: 1px solid #ccc; padding: 5pt; text-align: left; font-size: 9pt; }
 		.lines td { border-bottom: 1px solid #eee; padding: 5pt; }
 		/* Both the values and the headings above them: a column of figures with
-		   its heading on the other side reads as two columns. */
+			its heading on the other side reads as two columns. */
 		.num, .lines th.num { text-align: right; }
 		.totals { margin-top: 8pt; width: 45%; float: right; }
 		.totals td { padding: 3pt 5pt; }

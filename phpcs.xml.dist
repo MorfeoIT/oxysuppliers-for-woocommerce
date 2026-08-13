@@ -3,6 +3,8 @@
     <description>WordPress coding standards for this plugin.</description>
 
     <file>src</file>
+    <file>integrations</file>
+    <file>templates</file>
     <file>oxysuppliers-for-woocommerce.php</file>
     <file>uninstall.php</file>
 

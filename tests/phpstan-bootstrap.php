@@ -14,6 +14,7 @@ declare(strict_types=1);
 // upgrade.php dbDelta() lives in can actually be found during analysis.
 define( 'ABSPATH', dirname( __DIR__ ) . '/wordpress/' );
 define( 'MINUTE_IN_SECONDS', 60 );
+define( 'MB_IN_BYTES', 1048576 );
 define( 'HOUR_IN_SECONDS', 3600 );
 define( 'DAY_IN_SECONDS', 86400 );
 define( 'ARRAY_A', 'ARRAY_A' );

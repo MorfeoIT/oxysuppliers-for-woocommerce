@@ -12,6 +12,7 @@ namespace Oxysoft\OxySuppliers\Admin;
 use Oxysoft\OxySuppliers\Domain\Supplier;
 use Oxysoft\OxySuppliers\Domain\SupplierProduct;
 use Oxysoft\OxySuppliers\Domain\SupplierProductValidator;
+use Oxysoft\OxySuppliers\Persistence\PurchaseOrderRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierProductRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierRepository;
 use Oxysoft\OxySuppliers\Service\AuditLogger;
@@ -39,12 +40,14 @@ final class ProductSupplierPanel {
 	 * @param SupplierRepository        $suppliers Supplier storage.
 	 * @param SupplierProductValidator  $validator The rules.
 	 * @param AuditLogger               $audit     The trail.
+	 * @param PurchaseOrderRepository   $orders    For what is on its way.
 	 */
 	public function __construct(
 		private readonly SupplierProductRepository $lines,
 		private readonly SupplierRepository $suppliers,
 		private readonly SupplierProductValidator $validator,
-		private readonly AuditLogger $audit
+		private readonly AuditLogger $audit,
+		private readonly PurchaseOrderRepository $orders
 	) {
 	}
 
@@ -169,6 +172,8 @@ final class ProductSupplierPanel {
 			return;
 		}
 
+		$this->render_incoming( $product_id, $variation_id );
+
 		$preferred_field = $field_prefix . '[preferred]';
 		$chosen          = 0;
 
@@ -215,6 +220,41 @@ final class ProductSupplierPanel {
 			</p>
 		<?php endif; ?>
 		<?php
+	}
+
+	/**
+	 * What is on the shelf, what is on its way, and when it should land.
+	 *
+	 * The one line somebody looking at a product actually wants (§15). Shown
+	 * only when something is genuinely coming: a line saying "on the way: 0" is
+	 * noise.
+	 *
+	 * @param int $product_id   Parent product.
+	 * @param int $variation_id Variation, 0 for the product itself.
+	 * @return void
+	 */
+	private function render_incoming( int $product_id, int $variation_id ): void {
+		$incoming = $this->orders->incoming_for_item( $product_id, $variation_id );
+
+		if ( $incoming['quantity'] <= 0 ) {
+			return;
+		}
+
+		$product = wc_get_product( 0 !== $variation_id ? $variation_id : $product_id );
+		$stock   = $product instanceof \WC_Product && $product->managing_stock()
+			? (string) (int) $product->get_stock_quantity()
+			: __( 'not tracked', 'oxysuppliers-for-woocommerce' );
+
+		printf(
+			'<p class="form-field"><strong>%1$s</strong> %2$s &nbsp;|&nbsp; <strong>%3$s</strong> %4$d%5$s</p>',
+			esc_html__( 'Stock:', 'oxysuppliers-for-woocommerce' ),
+			esc_html( $stock ),
+			esc_html__( 'On the way:', 'oxysuppliers-for-woocommerce' ),
+			(int) $incoming['quantity'],
+			null === $incoming['eta']
+				? ''
+				: ' &nbsp;|&nbsp; <strong>' . esc_html__( 'Expected:', 'oxysuppliers-for-woocommerce' ) . '</strong> ' . esc_html( $incoming['eta'] )
+		);
 	}
 
 	/**

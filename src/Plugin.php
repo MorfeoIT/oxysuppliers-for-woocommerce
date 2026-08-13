@@ -9,9 +9,11 @@ declare(strict_types=1);
 
 namespace Oxysoft\OxySuppliers;
 
+use Oxysoft\OxySuppliers\Admin\ImportScreen;
 use Oxysoft\OxySuppliers\Admin\Menu;
 use Oxysoft\OxySuppliers\Admin\ProductSupplierPanel;
 use Oxysoft\OxySuppliers\Admin\PurchaseOrdersScreen;
+use Oxysoft\OxySuppliers\Admin\ReportsScreen;
 use Oxysoft\OxySuppliers\Admin\RequirementsScreen;
 use Oxysoft\OxySuppliers\Admin\SuppliersScreen;
 use Oxysoft\OxySuppliers\Domain\SupplierProductValidator;
@@ -19,13 +21,18 @@ use Oxysoft\OxySuppliers\Domain\SupplierValidator;
 use Oxysoft\OxySuppliers\Engine\RequirementCalculator;
 use Oxysoft\OxySuppliers\Engine\RequirementStrategy;
 use Oxysoft\OxySuppliers\Engine\TargetStockStrategy;
+use Oxysoft\OxySuppliers\Import\PriceListImporter;
+use Oxysoft\OxySuppliers\Import\SupplierCsvParser;
+use Oxysoft\OxySuppliers\Integration\OxyProfit as OxyProfitIntegration;
 use Oxysoft\OxySuppliers\Persistence\CatalogueRepository;
+use Oxysoft\OxySuppliers\Persistence\CostHistoryRepository;
 use Oxysoft\OxySuppliers\Persistence\Migrator;
 use Oxysoft\OxySuppliers\Persistence\PurchaseOrderRepository;
 use Oxysoft\OxySuppliers\Persistence\ReceiptRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierProductRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierRepository;
 use Oxysoft\OxySuppliers\Pdf\PdfRenderer;
+use Oxysoft\OxySuppliers\Rest\Controller as RestController;
 use Oxysoft\OxySuppliers\Pdf\PurchaseOrderDocument;
 use Oxysoft\OxySuppliers\Service\AuditLogger;
 use Oxysoft\OxySuppliers\Service\GoodsReceiver;
@@ -59,20 +66,30 @@ final class Plugin {
 
 		Capabilities::ensure_granted();
 
-		if ( is_admin() ) {
-			$suppliers = new SupplierRepository();
-			$listings  = new SupplierProductRepository();
-			$audit     = new AuditLogger();
-			$orders    = new PurchaseOrderRepository( new PurchaseOrderNumbers() );
+		// Outside is_admin(): what an article costs is asked on the front end
+		// and by other plugins' background work, not only on a screen.
+		OxyProfitIntegration::register();
 
+		$suppliers  = new SupplierRepository();
+		$listings   = new SupplierProductRepository();
+		$audit      = new AuditLogger();
+		$orders     = new PurchaseOrderRepository( new PurchaseOrderNumbers() );
+		$catalogue  = new CatalogueRepository();
+		$calculator = new RequirementCalculator( $this->requirement_strategy() );
+
+		// Outside is_admin(): the REST API is not an admin request, and its own
+		// permission callbacks are what guard it.
+		( new RestController( $catalogue, $calculator, $orders, $suppliers ) )->register();
+
+		if ( is_admin() ) {
 			$menu = new Menu();
 
 			// First tab, because it is the question the plugin exists to
 			// answer.
 			$menu->add_tab(
 				new RequirementsScreen(
-					new CatalogueRepository(),
-					new RequirementCalculator( $this->requirement_strategy() ),
+					$catalogue,
+					$calculator,
 					$suppliers,
 					new ProposalBuilder( $orders, $suppliers )
 				)
@@ -92,10 +109,17 @@ final class Plugin {
 					$renderer,
 					new PurchaseOrderMailer( $document, $renderer, $audit ),
 					$receipts,
-					new GoodsReceiver( $receipts, $orders, $audit )
+					new GoodsReceiver( $receipts, $orders, $audit, new CostHistoryRepository() )
 				)
 			);
 			$menu->add_tab( new SuppliersScreen( $suppliers, new SupplierValidator(), $audit ) );
+			$menu->add_tab( new ReportsScreen( $orders, $catalogue ) );
+			$menu->add_tab(
+				new ImportScreen(
+					new SupplierCsvParser(),
+					new PriceListImporter( $suppliers, $listings )
+				)
+			);
 
 			$menu->register();
 
@@ -103,7 +127,8 @@ final class Plugin {
 				$listings,
 				$suppliers,
 				new SupplierProductValidator(),
-				$audit
+				$audit,
+				$orders
 			) )->register();
 		}
 	}

@@ -13,6 +13,7 @@ use Oxysoft\OxySuppliers\Domain\Money;
 use Oxysoft\OxySuppliers\Domain\PurchaseOrder;
 use Oxysoft\OxySuppliers\Domain\Receipt;
 use Oxysoft\OxySuppliers\Domain\ReceiptLine;
+use Oxysoft\OxySuppliers\Persistence\CostHistoryRepository;
 use Oxysoft\OxySuppliers\Persistence\PurchaseOrderRepository;
 use Oxysoft\OxySuppliers\Persistence\ReceiptRepository;
 use Oxysoft\OxySuppliers\Support\Settings;
@@ -47,11 +48,13 @@ final class GoodsReceiver {
 	 * @param ReceiptRepository       $receipts Storage for receipts.
 	 * @param PurchaseOrderRepository $orders   Storage for orders.
 	 * @param AuditLogger             $audit    The trail.
+	 * @param CostHistoryRepository   $costs    What things have cost.
 	 */
 	public function __construct(
 		private readonly ReceiptRepository $receipts,
 		private readonly PurchaseOrderRepository $orders,
-		private readonly AuditLogger $audit
+		private readonly AuditLogger $audit,
+		private readonly CostHistoryRepository $costs
 	) {
 	}
 
@@ -198,6 +201,7 @@ final class GoodsReceiver {
 		}
 
 		$this->apply_stock( $receipt );
+		$this->record_costs( $order, $receipt );
 
 		// Read back, so that what the caller is handed says whether the stock
 		// moved. The object built a moment ago cannot know: the movement
@@ -328,6 +332,8 @@ final class GoodsReceiver {
 			$this->apply_stock( $stored );
 		}
 
+		$this->record_costs( $order, $stored );
+
 		$this->audit->log(
 			AuditLogger::OBJECT_RECEIPT,
 			(string) $reversal_id,
@@ -342,6 +348,75 @@ final class GoodsReceiver {
 		);
 
 		return new ReceiptOutcome( ReceiptOutcome::RECORDED, $stored );
+	}
+
+	/**
+	 * Write down what the goods actually cost.
+	 *
+	 * The price on the order is what was agreed; this is what was charged. When
+	 * nobody typed a different one they are the same, and recording it anyway
+	 * is what lets a shop answer "what did this cost me in March".
+	 *
+	 * **A correction is not a new fact.** Reversing a receipt writes an entry
+	 * putting the previous cost back, pointing at the reversal — rather than
+	 * leaving the wrong cost standing as the latest thing known. It is the same
+	 * rule the receipts follow, and the one OxyProfit learned the hard way:
+	 * correcting in place makes two numbers stop agreeing in silence.
+	 *
+	 * @param PurchaseOrder $order   The order.
+	 * @param Receipt       $receipt The receipt.
+	 * @return void
+	 */
+	private function record_costs( PurchaseOrder $order, Receipt $receipt ): void {
+		$lines = array();
+
+		foreach ( $order->lines as $line ) {
+			$lines[ $line->id ] = $line;
+		}
+
+		foreach ( $receipt->lines as $line ) {
+			$ordered = $lines[ $line->po_line_id ] ?? null;
+
+			if ( null === $ordered || 0 === $line->quantity ) {
+				continue;
+			}
+
+			$previous = $this->costs->cost_on( $line->product_id, $line->variation_id );
+
+			// A reversal puts back what was known before it; a delivery records
+			// what was charged.
+			$cost = $receipt->is_reversal()
+				? ( $previous ?? $ordered->unit_cost )
+				: ( $line->actual_cost ?? $ordered->unit_cost );
+
+			$this->costs->record(
+				array(
+					'supplier_id'  => $order->supplier_id,
+					'product_id'   => $line->product_id,
+					'variation_id' => $line->variation_id,
+					'old_cost'     => $previous,
+					'new_cost'     => $cost,
+					'source'       => $receipt->is_reversal() ? 'receipt_reversed' : 'receipt',
+					'po_id'        => $order->id,
+					'receipt_id'   => $receipt->id,
+				)
+			);
+
+			/**
+			 * Fires when what an article costs has changed.
+			 *
+			 * This is the seam other plugins in the family listen on, OxyProfit
+			 * among them.
+			 *
+			 * @since 0.1.0
+			 *
+			 * @param int                                  $product_id   Parent product.
+			 * @param int                                  $variation_id Variation, 0 for a simple product.
+			 * @param \Oxysoft\OxySuppliers\Domain\Money   $cost         What it now costs.
+			 * @param \Oxysoft\OxySuppliers\Domain\Money|null $previous  What it cost before, if known.
+			 */
+			do_action( 'oxysuppliers_cost_changed', $line->product_id, $line->variation_id, $cost, $previous );
+		}
 	}
 
 	/**

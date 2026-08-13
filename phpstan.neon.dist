@@ -10,3 +10,12 @@ parameters:
         - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
         - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
     treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        # OxyProfitCostSource lives outside src/ on purpose: it implements an
+        # interface that belongs to another plugin, and PHP resolves that when
+        # the file loads. Out there the autoloader cannot reach it, so the only
+        # way in is the explicit require after interface_exists() — which is
+        # also why the analyser cannot see it from here.
+        -
+            identifier: class.notFound
+            path: src/Integration/OxyProfit.php

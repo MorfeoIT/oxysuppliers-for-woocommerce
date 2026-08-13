@@ -34,3 +34,36 @@
 .oxysuppliers-error {
 	margin: 4px 0 0;
 }
+
+/* The reports: four numbers, and a way to act on each. */
+.oxysuppliers-cards {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin: 16px 0;
+}
+
+.oxysuppliers-card {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 12px 16px;
+	min-width: 200px;
+	flex: 1 1 200px;
+}
+
+.oxysuppliers-card h2 {
+	margin: 0;
+	font-size: 13px;
+	color: #50575e;
+}
+
+.oxysuppliers-card .figure {
+	font-size: 26px;
+	font-weight: 600;
+	margin: 4px 0;
+}
+
+.oxysuppliers-card.wants-attention {
+	border-left: 4px solid #d63638;
+}

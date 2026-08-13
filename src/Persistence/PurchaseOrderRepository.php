@@ -19,6 +19,7 @@ namespace Oxysoft\OxySuppliers\Persistence;
  */
 // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 // phpcs:disable WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 
 use Oxysoft\OxySuppliers\Domain\Money;
 use Oxysoft\OxySuppliers\Domain\PurchaseOrder;
@@ -298,6 +299,47 @@ final class PurchaseOrderRepository {
 		}
 
 		return $orders;
+	}
+
+	/**
+	 * What is on its way for one article, and when it should arrive.
+	 *
+	 * For the product screen (§15): "Stock: 4 | On the way: 30 | ETA: 18/08".
+	 * Only orders that are still expected count — a draft is a thought, and a
+	 * cancelled order is not coming.
+	 *
+	 * @param int $product_id   Parent product.
+	 * @param int $variation_id Variation, 0 for a simple product.
+	 * @return array{quantity:int,eta:string|null}
+	 */
+	public function incoming_for_item( int $product_id, int $variation_id = 0 ): array {
+		global $wpdb;
+
+		$orders   = Tables::name( Tables::PURCHASE_ORDERS );
+		$lines    = Tables::name( Tables::ORDER_ITEMS );
+		$expected = PurchaseOrderStatus::expected_values();
+		$statuses = implode( ',', array_fill( 0, count( $expected ), '%s' ) );
+
+		$values = array_merge( array( $product_id, $variation_id ), $expected );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom tables from constants, every value bound.
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT SUM( i.qty_ordered - i.qty_received ) AS due, MIN( o.expected_date ) AS eta
+				 FROM {$lines} i
+				 INNER JOIN {$orders} o ON o.id = i.po_id
+				 WHERE i.product_id = %d AND i.variation_id = %d
+				   AND o.status IN ( {$statuses} )
+				   AND i.qty_ordered > i.qty_received",
+				$values
+			),
+			ARRAY_A
+		);
+
+		return array(
+			'quantity' => null === $row ? 0 : (int) $row['due'],
+			'eta'      => null === $row || null === $row['eta'] ? null : (string) $row['eta'],
+		);
 	}
 
 	/**
