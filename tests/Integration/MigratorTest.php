@@ -47,15 +47,13 @@ final class MigratorTest extends WP_UnitTestCase {
 	public function test_creates_every_table(): void {
 		( new Migrator() )->migrate();
 
-		$existing = $this->existing_tables();
-
 		foreach ( Tables::all() as $table ) {
 			$name = Tables::name( $table );
 
-			$this->assertContains(
-				$name,
-				$existing,
-				"Missing table: {$name}\nFound: " . implode( ', ', $existing ) . "\n" . $this->diagnosis()
+			$this->assertNotSame(
+				array(),
+				$this->columns_of( $name ),
+				"Missing table: {$name}"
 			);
 		}
 
@@ -63,55 +61,29 @@ final class MigratorTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * The plugin's tables that the database will admit to having.
+	 * The columns of a table, or nothing when there is no such table.
 	 *
+	 * **Never ask `SHOW TABLES` here.** The WordPress test harness filters every
+	 * query and rewrites `CREATE TABLE` into `CREATE TEMPORARY TABLE`, so that a
+	 * test's schema disappears with its connection. `SHOW TABLES` does not list
+	 * temporary tables — it would report a perfectly healthy schema as missing,
+	 * which is exactly what it did here. `DESCRIBE` sees them, and so does every
+	 * query the plugin itself makes.
+	 *
+	 * @param string $name Fully qualified table name.
 	 * @return list<string>
 	 */
-	private function existing_tables(): array {
+	private function columns_of( string $name ): array {
 		global $wpdb;
 
-		$like = $wpdb->esc_like( $wpdb->prefix . 'oxysuppliers' ) . '%';
+		$wpdb->suppress_errors( true );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Test assertion.
-		return array_values( (array) $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $like ) ) );
-	}
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Test assertion, table name from a constant.
+		$columns = $wpdb->get_col( "DESCRIBE {$name}" );
 
-	/**
-	 * What dbDelta actually did, statement by statement.
-	 *
-	 * Only ever built when an assertion has already failed. A missing table has
-	 * two very different causes — a statement MySQL refused, or a statement it
-	 * accepted and this connection cannot yet see — and this tells them apart
-	 * instead of leaving it to guesswork.
-	 *
-	 * @return string
-	 */
-	private function diagnosis(): string {
-		global $wpdb;
+		$wpdb->suppress_errors( false );
 
-		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-
-		$schema = new \ReflectionMethod( Migrator::class, 'schema' );
-		$schema->setAccessible( true );
-
-		/** @var list<string> $statements */
-		$statements = $schema->invoke( new Migrator() );
-		$report     = array( 'dbDelta, run again by hand:' );
-
-		foreach ( $statements as $statement ) {
-			preg_match( '/CREATE TABLE (\S+)/', $statement, $matches );
-
-			$result = dbDelta( $statement );
-
-			$report[] = sprintf(
-				'  %s => %s | last_error: %s',
-				$matches[1] ?? '?',
-				(string) wp_json_encode( $result ),
-				'' === $wpdb->last_error ? '(none)' : $wpdb->last_error
-			);
-		}
-
-		return implode( "\n", $report );
+		return array_values( (array) $columns );
 	}
 
 	/**

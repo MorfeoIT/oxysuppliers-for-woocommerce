@@ -19,5 +19,7 @@ oxywp.com is generated from `readme.txt`, which follows this file.
 - Non-destructive uninstall: the data stays unless an administrator asks for it
   to go.
 - Plugin icon (128 and 256 px) in `.wordpress-org/`.
-- 29 unit tests, 18 checks inside a real WordPress, PHPCS clean, CI on GitHub
-  Actions including a job that builds the package and inspects it.
+- 29 unit tests and 23 checks inside a real WordPress (schema, capabilities,
+  storage), PHPCS clean, PHPStan at level 8 clean, CI on GitHub Actions
+  including a job that builds the package and inspects it.
+- Tested against WordPress 6.9.7, which is what the integration suite runs on.
