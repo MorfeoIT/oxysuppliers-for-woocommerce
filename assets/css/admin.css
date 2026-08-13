@@ -67,3 +67,92 @@
 .oxysuppliers-card.wants-attention {
 	border-left: 4px solid #d63638;
 }
+
+/**
+ * The price list on the product screen.
+ *
+ * WooCommerce styles the fields inside its product panels for one field per
+ * line, and squeezes them to nothing inside a table: the values are in the
+ * HTML, they simply have no room to be read. A field too narrow to show what
+ * is in it is the same as an empty one to whoever is looking at it.
+ *
+ * The widths below are small on purpose. Nine columns have to fit the panel,
+ * and a table that runs off the right-hand edge hides the preferred-supplier
+ * radio, which is the one control on the row that decides anything.
+ */
+.oxysuppliers-lines {
+	width: 100%;
+	margin: 0 0 8px;
+	table-layout: auto;
+}
+
+.oxysuppliers-lines th,
+.oxysuppliers-lines td {
+	padding: 6px 6px 6px 0;
+	text-align: left;
+	vertical-align: middle;
+}
+
+.oxysuppliers-lines th {
+	font-weight: 600;
+}
+
+#oxysuppliers_product_data .oxysuppliers-lines input[type="text"],
+#oxysuppliers_product_data .oxysuppliers-lines input[type="number"],
+#oxysuppliers_product_data .oxysuppliers-lines select {
+	float: none;
+	width: 100%;
+	min-width: 0;
+	max-width: 100%;
+	margin: 0;
+	box-sizing: border-box;
+}
+
+#oxysuppliers_product_data .oxysuppliers-lines input[type="checkbox"],
+#oxysuppliers_product_data .oxysuppliers-lines input[type="radio"] {
+	float: none;
+	width: auto;
+	min-width: 0;
+	margin: 0;
+}
+
+/* The spinners are 17px of arrows on a field holding two digits. */
+#oxysuppliers_product_data .oxysuppliers-lines input[type="number"] {
+	appearance: textfield;
+	-moz-appearance: textfield;
+}
+
+#oxysuppliers_product_data .oxysuppliers-lines input[type="number"]::-webkit-outer-spin-button,
+#oxysuppliers_product_data .oxysuppliers-lines input[type="number"]::-webkit-inner-spin-button {
+	appearance: none;
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+/* Names are long, numbers are short: give the room to the ones that need it. */
+.oxysuppliers-lines th:first-child,
+.oxysuppliers-lines td:first-child {
+	width: 20%;
+}
+
+.oxysuppliers-lines th:nth-child(2),
+.oxysuppliers-lines td:nth-child(2) {
+	width: 18%;
+}
+
+.oxysuppliers-lines th:nth-child(3),
+.oxysuppliers-lines td:nth-child(3) {
+	width: 11%;
+}
+
+.oxysuppliers-lines th:nth-child(n+4):nth-child(-n+7),
+.oxysuppliers-lines td:nth-child(n+4):nth-child(-n+7) {
+	width: 9%;
+}
+
+/* A radio and a checkbox need no more room than themselves. */
+.oxysuppliers-lines th:nth-child(n+8),
+.oxysuppliers-lines td:nth-child(n+8) {
+	width: 6%;
+	text-align: center;
+}

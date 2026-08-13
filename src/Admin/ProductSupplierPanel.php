@@ -18,6 +18,10 @@ use Oxysoft\OxySuppliers\Persistence\SupplierRepository;
 use Oxysoft\OxySuppliers\Service\AuditLogger;
 use Oxysoft\OxySuppliers\Support\Capabilities;
 
+use function Oxysoft\OxySuppliers\plugin_url;
+
+use const Oxysoft\OxySuppliers\VERSION;
+
 /**
  * Who sells this, for how much, and in what quantities.
  *
@@ -65,6 +69,39 @@ final class ProductSupplierPanel {
 		add_action( 'woocommerce_save_product_variation', array( $this, 'save_variation' ), 10, 2 );
 
 		add_action( 'admin_notices', array( $this, 'render_notice' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+	}
+
+	/**
+	 * Dress the panel on the product screen.
+	 *
+	 * The menu loads the stylesheet on screens whose hook carries the plugin's
+	 * slug, and this is not one of them: the panel lives on WooCommerce's
+	 * product screen. Without this it shipped unstyled, and WooCommerce's own
+	 * rules — written for one field per line — squeezed every field in the price
+	 * list to a few pixels. The values were in the page all along; there was
+	 * nowhere to read them.
+	 *
+	 * @param string $hook Current admin screen.
+	 * @return void
+	 */
+	public function enqueue( $hook ): void {
+		if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+
+		if ( ! $screen instanceof \WP_Screen || 'product' !== $screen->post_type ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'oxysuppliers-admin',
+			plugin_url() . 'assets/css/admin.css',
+			array(),
+			VERSION
+		);
 	}
 
 	/**

@@ -102,6 +102,16 @@ Not before you have seen it. The file is read, and you are shown what would be
 created, what would be changed and which rows have something wrong with them.
 Nothing is written until you say so.
 
+== Screenshots ==
+
+1. What to reorder: what is running low, who supplies it, what it costs, how many to buy — and what is already on its way, so nothing is bought twice.
+2. The purchase orders, with what each one is worth and what stage it has reached.
+3. One order: the lines, the supplier's own codes, and the totals that go on the document.
+4. Receiving what has arrived, part of an order at a time, with the price actually charged next to the price that was ordered.
+5. The suppliers, with their terms and lead times.
+6. The Suppliers tab on a product: who sells it, at what price, with what minimum, multiple and pack size — and which of them is the preferred one.
+7. The four reports the free plugin gives you.
+
 == Changelog ==
 
 = 0.1.0 =

@@ -5,6 +5,28 @@ oxywp.com is generated from `readme.txt`, which follows this file.
 
 ## [Unreleased]
 
+### Sprint 8 — ready to release (14/08/2026)
+
+**The Suppliers panel on a product had never been styled.** The stylesheet was
+loaded on screens whose hook carries the plugin's slug, and WooCommerce's
+product screen is not one of them — so WooCommerce's own rules, written for one
+field per line, squeezed every field in the price list to a few pixels. The
+supplier's code, the cost, the minimum, the multiple: all in the page, none of
+them readable. Found by taking the screenshots, which is what screenshots are
+for.
+
+- **Removing the plugin proved both ways**, with uninstall.php run exactly as
+  WordPress runs it: by default the tables, the settings and a real supplier
+  survive; with the setting turned on, all eight tables, the options and the
+  capabilities go. 18 checks.
+- **Seven screenshots from a real installation**, taken by
+  `scripts/screenshots.mjs` against the bench rather than mocked up, so they
+  cannot drift from what the plugin does.
+- `scripts/bench-seed.php` builds the same believable shop every time: three
+  suppliers, a price list, an order in transit, one part-delivered and one late.
+- `docs/SUBMISSION_READINESS.md` says what is ready, what was checked and how,
+  and what is not.
+
 ### Sprint 7 — goods on the way, what things cost, and the world outside (13/08/2026)
 
 **Goods on the way stop being zero.** What has been ordered and not yet received
