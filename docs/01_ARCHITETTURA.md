@@ -7,14 +7,20 @@ negozio vero e i suoi difetti sono già stati pagati.
 
 ```
 src/
-  Domain/          PHP puro. Nessuna chiamata a WordPress, nessun $wpdb.
-  Engine/          Le decisioni: fabbisogno, quantità suggerita, riconciliazione.
-  Infrastructure/  Repository su $wpdb, ponte verso WooCommerce, cron, mail.
-  Admin/           Schermate, list table, form, asset.
-  Rest/            Controller REST oxysuppliers/v1.
-  Pdf/             Generazione del PDF dell'ordine.
-  Plugin.php       Composizione: è qui che gli strati si incontrano.
+  Domain/       PHP puro. Nessuna chiamata a WordPress, nessun $wpdb.
+  Engine/       Le decisioni: fabbisogno, quantità suggerita, riconciliazione.
+  Persistence/  Tables, Migrator e i repository su $wpdb.
+  Service/      Quello che orchestra: audit log, ricezioni, calcolo costi.
+  Support/      Capability, impostazioni, licenza.
+  Integration/  Ponte verso WooCommerce e verso gli altri plugin Oxy.
+  Admin/        Schermate, tabelle, form, asset.
+  Rest/         Controller REST oxysuppliers/v1.
+  Pdf/          Generazione del PDF dell'ordine.
+  Plugin.php    Composizione: è qui che gli strati si incontrano.
 ```
+
+Sono gli stessi nomi di OxyProfit, di proposito: chi ha appena letto un plugin
+della famiglia sa già dove guardare nell'altro.
 
 **La regola che regge tutto il resto:** `Domain` e `Engine` non chiamano
 WordPress. Regole, righe, orologio e configurazione arrivano dal costruttore.
@@ -30,9 +36,13 @@ hook.
 
 - `Money` — interi in centesimi, valuta esplicita, mai `float`. **Nostro**, non
   quello di OxyProfit: due plugin non condividono classi.
-- `Quantity` — intero, con `round_to_order_multiple()` che applica minimo,
-  multiplo e confezione **in quest'ordine** e restituisce sempre un valore che
-  il fornitore può accettare.
+- `OrderTerms` — minimo, multiplo e confezione, con `round_up()` che restituisce
+  sempre una quantità che il fornitore può accettare, e `accepts()` che lo
+  verifica. Multiplo e confezione sono **due vincoli**, non uno: chi vende in
+  confezioni da sei e a multipli di dieci accetta solo i multipli di trenta, e
+  prendere il maggiore dei due proporrebbe un ordine impossibile da evadere.
+  Il minimo viene arrotondato al passo come tutto il resto — «almeno dieci, in
+  confezioni da quattro» fa dodici.
 - `PurchaseOrderNumber` — la numerazione, filtrabile.
 - `Requirement` — fabbisogno di una riga: stock, obiettivo, in arrivo,
   suggerito.
@@ -53,6 +63,32 @@ un'altra, che considera consumo medio, lead time e merce in arrivo.
 La strategia si sceglie con `apply_filters( 'oxysuppliers_requirement_strategy', ... )`.
 **Un solo filtro, un solo vincitore**: è il seme di come il PRO si innesta, e le
 regole per scriverlo bene stanno in `03_FREE_VS_PRO.md`.
+
+## Il menu: una voce sola, con dei tab
+
+La specifica (§27) chiede WooCommerce → Acquisti → sei pagine. Il menu di
+WordPress ha **due soli livelli**, quindi il secondo livello sono dei tab su una
+pagina sola: sei voci sotto WooCommerce spingerebbero via tutto il resto, e
+WooCommerce stesso risolve la stessa cosa allo stesso modo.
+
+Due conseguenze che vanno tenute a mente aggiungendo un tab:
+
+- ogni tab si mostra **solo a chi ha la sua capability**, quindi l'elenco dei
+  tab visibili è anche la risposta a «cosa posso fare qui»;
+- la voce di menu si registra con la capability del **primo tab che quell'utente
+  può aprire**, perché `add_submenu_page()` ne accetta una sola: chi gestisce i
+  fornitori ma non vede gli ordini d'acquisto deve comunque trovare il menu.
+
+## Il pannello sulla scheda prodotto: niente JavaScript
+
+Il listino di un articolo è una tabella di righe ripetute, che di solito si fa
+con uno script che aggiunge e toglie righe. Qui no: si disegnano le righe che
+esistono più una vuota, e si salva col bottone che il negozio preme già. Una
+riga si toglie spuntando una casella.
+
+Costa un giro di salvataggio in più per aggiungere due fornitori insieme, e in
+cambio non c'è niente da compilare, niente da spedire e niente che si rompa
+quando WooCommerce cambia il modo di clonare le righe delle variazioni.
 
 ## HPOS
 

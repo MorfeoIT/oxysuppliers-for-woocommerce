@@ -5,6 +5,30 @@ oxywp.com is generated from `readme.txt`, which follows this file.
 
 ## [Unreleased]
 
+### Sprint 2 — product to supplier (13/08/2026)
+
+- Price lists: each product or variation can be linked to any number of
+  suppliers, each with their own code, cost, minimum, order multiple, pack size
+  and lead time.
+- `OrderTerms`, which turns a need into a quantity the supplier will actually
+  accept. Minimum, multiple and pack size are three constraints that all have to
+  hold at once — packs of six and multiples of ten leave only the multiples of
+  thirty — and nothing is ever rounded down.
+- Preferred supplier per article, with the cheapest standing in when nobody has
+  been chosen, so a shop with one supplier never has to tick a box.
+- A **Suppliers** panel on the product screen and on every variation, with no
+  JavaScript at all.
+- Saving the same supplier for the same article twice is an edit, not a second
+  line, in the code and in the database.
+- The list of suppliers now tells an empty shop apart from a search that found
+  nothing.
+- 51 unit tests, 35 checks inside WordPress, 50 checks driving the admin screens
+  over HTTP on the test bench, plus 21 that drive the product panel the way the
+  product screen does.
+- Test bench at test.44123.it/oxysuppliers: WordPress 7.0.4, WooCommerce 11,
+  HPOS on, seeded with a small but real shop. `scripts/deploy-test-site.ps1`,
+  `scripts/verify-http.sh` and `scripts/verify-product-panel.php`.
+
 ### Sprint 1 — foundations (12/08/2026)
 
 - Plugin bootstrap, PSR-4 autoloader, WooCommerce and HPOS compatibility

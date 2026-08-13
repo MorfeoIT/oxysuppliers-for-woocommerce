@@ -53,6 +53,16 @@ linea guida 5 di WordPress.org sul trialware.
 
 ## Stato
 
-**12/08/2026 — fondazione documentale.** Nessun codice scritto.
-Prossimo passo: Sprint 1 (bootstrap, migrazioni, capability, anagrafica
-fornitori), dopo approvazione dei documenti.
+**13/08/2026 — Sprint 1 e 2 chiusi**, verdi in CI e provati su un negozio vero.
+
+| | |
+|---|---|
+| Sprint 1 | fondamenta, otto tabelle, capability, anagrafica fornitori, audit log |
+| Sprint 2 | listini prodotto-fornitore, arrotondamento delle quantità, fornitore preferenziale, pannello sulla scheda prodotto |
+| Prove | 51 unit su PHP 8.1→8.4, 35 dentro WordPress 7.0.4, 50 via HTTP, 21 sul pannello prodotto |
+| Qualità | PHPCS, PHPStan livello 8 e Plugin Check puliti |
+
+Banco di prova: <https://test.44123.it/oxysuppliers> (WooCommerce 11, HPOS
+attivo). Deploy con `scripts\deploy-test-site.ps1`.
+
+Prossimo passo: Sprint 3, la dashboard dei fabbisogni.
