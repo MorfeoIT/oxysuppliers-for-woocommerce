@@ -153,8 +153,17 @@ $currency = $order->currency;
 </table>
 
 <div class="notes">
-	<?php if ( '' !== $order->payment_terms ) : ?>
-		<p><strong><?php echo esc_html( $labels['terms'] ); ?>:</strong> <?php echo esc_html( $order->payment_terms ); ?></p>
+	<?php
+	// The terms are copied onto the order when it is created, so that an order
+	// sent last year still says what was agreed last year. An order that has
+	// none falls back to the supplier's, which is better than a document that
+	// quietly says nothing about when it will be paid.
+	$terms = '' !== $order->payment_terms
+		? $order->payment_terms
+		: ( null === $supplier ? '' : $supplier->payment_terms );
+	?>
+	<?php if ( '' !== $terms ) : ?>
+		<p><strong><?php echo esc_html( $labels['terms'] ); ?>:</strong> <?php echo esc_html( $terms ); ?></p>
 	<?php endif; ?>
 
 	<?php if ( '' !== $order->supplier_notes ) : ?>

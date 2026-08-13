@@ -151,8 +151,10 @@ final class PurchaseOrderMailer {
 			return '';
 		}
 
+		// A prefix of its own, so that anything looking for leftovers can tell
+		// these apart from whatever else has "oxysuppliers" in its name.
 		$name = sanitize_file_name( $order->number . '.pdf' );
-		$path = trailingslashit( get_temp_dir() ) . uniqid( 'oxysuppliers-', true ) . '-' . $name;
+		$path = trailingslashit( get_temp_dir() ) . uniqid( 'oxysuppliers-po-', true ) . '-' . $name;
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- A temporary file for one attachment, deleted straight after.
 		$written = file_put_contents( $path, $pdf );
