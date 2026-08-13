@@ -18,8 +18,12 @@ use Oxysoft\OxySuppliers\Domain\PurchaseOrderStatus;
 use Oxysoft\OxySuppliers\Persistence\PurchaseOrderRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierProductRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierRepository;
+use Oxysoft\OxySuppliers\Pdf\PdfRenderer;
+use Oxysoft\OxySuppliers\Pdf\PurchaseOrderDocument;
 use Oxysoft\OxySuppliers\Service\AuditLogger;
+use Oxysoft\OxySuppliers\Service\PurchaseOrderMailer;
 use Oxysoft\OxySuppliers\Support\Capabilities;
+use Oxysoft\OxySuppliers\Support\Settings;
 
 /**
  * Purchase orders: the list, the document, and the buttons that move it on.
@@ -36,6 +40,8 @@ final class PurchaseOrdersScreen implements Screen {
 	public const CREATE_ACTION = 'oxysuppliers_create_order';
 	public const SAVE_ACTION   = 'oxysuppliers_save_order';
 	public const STATUS_ACTION = 'oxysuppliers_order_status';
+	public const PDF_ACTION    = 'oxysuppliers_order_pdf';
+	public const SEND_ACTION   = 'oxysuppliers_send_order';
 
 	/**
 	 * How many orders a page holds.
@@ -56,12 +62,18 @@ final class PurchaseOrdersScreen implements Screen {
 	 * @param SupplierRepository        $suppliers Storage for suppliers.
 	 * @param SupplierProductRepository $listings  Storage for price lists.
 	 * @param AuditLogger               $audit     The trail.
+	 * @param PurchaseOrderDocument     $document  Builds the document.
+	 * @param PdfRenderer               $renderer  Turns it into a PDF.
+	 * @param PurchaseOrderMailer       $mailer    Sends it.
 	 */
 	public function __construct(
 		private readonly PurchaseOrderRepository $orders,
 		private readonly SupplierRepository $suppliers,
 		private readonly SupplierProductRepository $listings,
-		private readonly AuditLogger $audit
+		private readonly AuditLogger $audit,
+		private readonly PurchaseOrderDocument $document,
+		private readonly PdfRenderer $renderer,
+		private readonly PurchaseOrderMailer $mailer
 	) {
 	}
 
@@ -101,6 +113,8 @@ final class PurchaseOrdersScreen implements Screen {
 		add_action( 'admin_post_' . self::CREATE_ACTION, array( $this, 'handle_create' ) );
 		add_action( 'admin_post_' . self::SAVE_ACTION, array( $this, 'handle_save' ) );
 		add_action( 'admin_post_' . self::STATUS_ACTION, array( $this, 'handle_status' ) );
+		add_action( 'admin_post_' . self::PDF_ACTION, array( $this, 'handle_pdf' ) );
+		add_action( 'admin_post_' . self::SEND_ACTION, array( $this, 'handle_send' ) );
 	}
 
 	/**
@@ -405,6 +419,7 @@ final class PurchaseOrdersScreen implements Screen {
 		</p>
 
 		<?php $this->render_status_actions( $order ); ?>
+		<?php $this->render_send_box( $order ); ?>
 
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<input type="hidden" name="action" value="<?php echo esc_attr( self::SAVE_ACTION ); ?>">
@@ -612,6 +627,276 @@ final class PurchaseOrdersScreen implements Screen {
 		}
 
 		echo '</p>';
+	}
+
+	/**
+	 * The document, and the envelope it goes in.
+	 *
+	 * The recipient is shown, filled in and editable **before** anything is
+	 * pressed. Sending is the one thing this plugin does that cannot be undone:
+	 * the supplier has the email the moment it leaves.
+	 *
+	 * @param PurchaseOrder $order The order.
+	 * @return void
+	 */
+	private function render_send_box( PurchaseOrder $order ): void {
+		if ( array() === $order->lines ) {
+			return;
+		}
+
+		$supplier = $this->suppliers->find( $order->supplier_id );
+		$sent     = $this->audit->count( AuditLogger::OBJECT_ORDER, (string) $order->id, AuditLogger::ACTION_SENT );
+
+		?>
+		<p>
+			<a class="button" href="<?php echo esc_url( $this->pdf_url( $order->id ) ); ?>">
+				<?php esc_html_e( 'Download the PDF', 'oxysuppliers-for-woocommerce' ); ?>
+			</a>
+		</p>
+
+		<?php if ( ! current_user_can( Capabilities::SEND_ORDERS ) ) : ?>
+			<?php return; ?>
+		<?php endif; ?>
+
+		<h2><?php esc_html_e( 'Send it to the supplier', 'oxysuppliers-for-woocommerce' ); ?></h2>
+
+		<?php if ( $sent > 0 ) : ?>
+			<div class="notice notice-warning inline">
+				<p>
+					<?php
+					echo esc_html(
+						sprintf(
+							/* translators: 1: how many times it has been sent, 2: when it last went. */
+							_n(
+								'This order has already been sent %1$d time, on %2$s. Sending it again will send another email.',
+								'This order has already been sent %1$d times, the last on %2$s. Sending it again will send another email.',
+								$sent,
+								'oxysuppliers-for-woocommerce'
+							),
+							$sent,
+							(string) $order->sent_at
+						)
+					);
+					?>
+				</p>
+			</div>
+		<?php endif; ?>
+
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<input type="hidden" name="action" value="<?php echo esc_attr( self::SEND_ACTION ); ?>">
+			<input type="hidden" name="id" value="<?php echo esc_attr( (string) $order->id ); ?>">
+			<?php wp_nonce_field( self::SEND_ACTION . '_' . $order->id ); ?>
+
+			<table class="form-table" role="presentation">
+				<tbody>
+					<tr>
+						<th scope="row"><label for="oxysuppliers-send-to"><?php esc_html_e( 'To', 'oxysuppliers-for-woocommerce' ); ?></label></th>
+						<td>
+							<input type="email" id="oxysuppliers-send-to" class="regular-text" name="to"
+								value="<?php echo esc_attr( null === $supplier ? '' : $supplier->order_email ); ?>" required>
+							<?php if ( null !== $supplier && '' === $supplier->order_email ) : ?>
+								<p class="description">
+									<?php esc_html_e( 'This supplier has no orders email on file. Type one, or add it to the supplier.', 'oxysuppliers-for-woocommerce' ); ?>
+								</p>
+							<?php endif; ?>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="oxysuppliers-send-cc"><?php esc_html_e( 'Cc', 'oxysuppliers-for-woocommerce' ); ?></label></th>
+						<td><input type="text" id="oxysuppliers-send-cc" class="regular-text" name="cc" value="<?php echo esc_attr( (string) Settings::get( 'email_cc' ) ); ?>"></td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="oxysuppliers-send-bcc"><?php esc_html_e( 'Bcc', 'oxysuppliers-for-woocommerce' ); ?></label></th>
+						<td><input type="text" id="oxysuppliers-send-bcc" class="regular-text" name="bcc" value="<?php echo esc_attr( (string) Settings::get( 'email_bcc' ) ); ?>"></td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="oxysuppliers-send-subject"><?php esc_html_e( 'Subject', 'oxysuppliers-for-woocommerce' ); ?></label></th>
+						<td>
+							<input type="text" id="oxysuppliers-send-subject" class="large-text" name="subject"
+								value="<?php echo esc_attr( PurchaseOrderMailer::fill( Settings::default_email_subject(), $order ) ); ?>">
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="oxysuppliers-send-body"><?php esc_html_e( 'Message', 'oxysuppliers-for-woocommerce' ); ?></label></th>
+						<td>
+							<textarea id="oxysuppliers-send-body" class="large-text" rows="8" name="body">
+							<?php
+								echo esc_textarea( PurchaseOrderMailer::fill( Settings::default_email_body(), $order ) );
+							?>
+							</textarea>
+							<p class="description"><?php esc_html_e( 'The PDF goes with it as an attachment.', 'oxysuppliers-for-woocommerce' ); ?></p>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<p class="submit">
+				<?php
+				submit_button(
+					$sent > 0
+						? __( 'Send it again', 'oxysuppliers-for-woocommerce' )
+						: __( 'Send to the supplier', 'oxysuppliers-for-woocommerce' ),
+					'primary',
+					'submit',
+					false
+				);
+				?>
+			</p>
+		</form>
+
+		<?php $this->render_history( $order ); ?>
+		<?php
+	}
+
+	/**
+	 * What has happened to this order.
+	 *
+	 * @param PurchaseOrder $order The order.
+	 * @return void
+	 */
+	private function render_history( PurchaseOrder $order ): void {
+		$history = $this->audit->history( AuditLogger::OBJECT_ORDER, (string) $order->id, 20 );
+
+		if ( array() === $history ) {
+			return;
+		}
+
+		?>
+		<h2><?php esc_html_e( 'History', 'oxysuppliers-for-woocommerce' ); ?></h2>
+		<table class="wp-list-table widefat striped">
+			<tbody>
+			<?php foreach ( $history as $line ) : ?>
+				<tr>
+					<td style="width: 180px;"><?php echo esc_html( (string) $line['created_at'] ); ?></td>
+					<td style="width: 160px;"><?php echo esc_html( (string) $line['action'] ); ?></td>
+					<td><?php echo esc_html( (string) ( $line['message'] ?? '' ) ); ?></td>
+				</tr>
+			<?php endforeach; ?>
+			</tbody>
+		</table>
+		<?php
+	}
+
+	/**
+	 * Send the PDF to the browser.
+	 *
+	 * Never a file left in the uploads folder: a purchase order sitting there is
+	 * one guessed address away from anybody. It is built on the way out, behind
+	 * a capability check and a nonce.
+	 *
+	 * @return void
+	 */
+	public function handle_pdf(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Verified on the next line, against this id.
+		$id = isset( $_GET['id'] ) ? absint( wp_unslash( $_GET['id'] ) ) : 0;
+
+		check_admin_referer( self::PDF_ACTION . '_' . $id );
+
+		if ( ! current_user_can( Capabilities::VIEW_ORDERS ) ) {
+			wp_die( esc_html__( 'You are not allowed to see purchase orders.', 'oxysuppliers-for-woocommerce' ), 403 );
+		}
+
+		$order = $this->orders->find( $id );
+
+		if ( null === $order ) {
+			wp_die( esc_html__( 'That purchase order no longer exists.', 'oxysuppliers-for-woocommerce' ), 404 );
+		}
+
+		$pdf = $this->renderer->render(
+			$this->document->html( $order, $this->suppliers->find( $order->supplier_id ) )
+		);
+
+		if ( '' === $pdf ) {
+			wp_die( esc_html__( 'The PDF could not be made. The plugin may be missing part of its installation.', 'oxysuppliers-for-woocommerce' ), 500 );
+		}
+
+		nocache_headers();
+		header( 'Content-Type: application/pdf' );
+		header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $order->number . '.pdf' ) . '"' );
+		header( 'Content-Length: ' . strlen( $pdf ) );
+
+		echo $pdf; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Binary PDF, not markup.
+		exit;
+	}
+
+	/**
+	 * Send the order to the supplier.
+	 *
+	 * @return void
+	 */
+	public function handle_send(): void {
+		$id = isset( $_POST['id'] ) ? absint( wp_unslash( $_POST['id'] ) ) : 0;
+
+		check_admin_referer( self::SEND_ACTION . '_' . $id );
+
+		if ( ! current_user_can( Capabilities::SEND_ORDERS ) ) {
+			wp_die( esc_html__( 'You are not allowed to send purchase orders.', 'oxysuppliers-for-woocommerce' ), 403 );
+		}
+
+		$order = $this->orders->find( $id );
+
+		if ( null === $order ) {
+			$this->redirect( array( 'notice' => 'missing' ) );
+		}
+
+		$result = $this->mailer->send(
+			$order,
+			$this->suppliers->find( $order->supplier_id ),
+			array(
+				'to'      => isset( $_POST['to'] ) ? sanitize_email( wp_unslash( $_POST['to'] ) ) : '',
+				'cc'      => isset( $_POST['cc'] ) ? sanitize_text_field( wp_unslash( $_POST['cc'] ) ) : '',
+				'bcc'     => isset( $_POST['bcc'] ) ? sanitize_text_field( wp_unslash( $_POST['bcc'] ) ) : '',
+				'subject' => isset( $_POST['subject'] ) ? sanitize_text_field( wp_unslash( $_POST['subject'] ) ) : '',
+				'body'    => isset( $_POST['body'] ) ? sanitize_textarea_field( wp_unslash( $_POST['body'] ) ) : '',
+			)
+		);
+
+		if ( ! $result['sent'] ) {
+			$this->redirect(
+				array(
+					'action' => 'view',
+					'id'     => $id,
+					'notice' => 'not_sent',
+				)
+			);
+		}
+
+		// The first time it goes out, the order moves on. A resend does not
+		// move anything: it has already been sent, and saying so twice would
+		// overwrite when it first went.
+		if ( ! $result['resend'] && $order->status->can_move_to( PurchaseOrderStatus::SENT ) ) {
+			$this->orders->mark_sent( $order );
+
+			/** This action is documented in src/Admin/PurchaseOrdersScreen.php */
+			do_action( 'oxysuppliers_purchase_order_sent', $order );
+		}
+
+		$this->redirect(
+			array(
+				'action' => 'view',
+				'id'     => $id,
+				'notice' => $result['resend'] ? 'resent' : 'sent',
+			)
+		);
+	}
+
+	/**
+	 * Where the PDF lives.
+	 *
+	 * @param int $id Order id.
+	 * @return string
+	 */
+	private function pdf_url( int $id ): string {
+		return wp_nonce_url(
+			add_query_arg(
+				array(
+					'action' => self::PDF_ACTION,
+					'id'     => $id,
+				),
+				admin_url( 'admin-post.php' )
+			),
+			self::PDF_ACTION . '_' . $id
+		);
 	}
 
 	/**
@@ -1130,6 +1415,9 @@ final class PurchaseOrdersScreen implements Screen {
 			'saved'          => array( 'success', __( 'Purchase order saved.', 'oxysuppliers-for-woocommerce' ) ),
 			'status'         => array( 'success', __( 'Purchase order updated.', 'oxysuppliers-for-woocommerce' ) ),
 			'proposed'       => array( 'success', __( 'Draft purchase orders created, one per supplier.', 'oxysuppliers-for-woocommerce' ) ),
+			'sent'           => array( 'success', __( 'Sent to the supplier, with the PDF attached.', 'oxysuppliers-for-woocommerce' ) ),
+			'resent'         => array( 'success', __( 'Sent again. Both sends are in the history below.', 'oxysuppliers-for-woocommerce' ) ),
+			'not_sent'       => array( 'error', __( 'The message could not be sent, so nothing has gone to the supplier. Check the site\'s email settings and the address.', 'oxysuppliers-for-woocommerce' ) ),
 			'missing'        => array( 'error', __( 'That purchase order no longer exists.', 'oxysuppliers-for-woocommerce' ) ),
 			'no_supplier'    => array( 'error', __( 'Choose a supplier first.', 'oxysuppliers-for-woocommerce' ) ),
 			'not_editable'   => array( 'error', __( 'That order has already gone out, so its lines cannot be changed.', 'oxysuppliers-for-woocommerce' ) ),

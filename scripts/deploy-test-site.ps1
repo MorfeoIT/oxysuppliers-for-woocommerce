@@ -47,11 +47,27 @@ if ($LASTEXITCODE -ne 0) { throw 'scp fallito' }
 # a native command into an error record, so the warning has to go too.
 $activate = if ($SkipActivate) { 'true' } else { "wp plugin activate $slug >/dev/null 2>&1 || true" }
 
+# Composer files are export-ignored, so they travel separately: the plugin needs
+# them to install its one runtime dependency, and the distributed package must
+# not carry them.
+scp -i $KeyPath (Join-Path $repo 'composer.json') "root@${Server}:/tmp/$slug-composer.json"
+scp -i $KeyPath (Join-Path $repo 'composer.lock') "root@${Server}:/tmp/$slug-composer.lock"
+
 $remote = @"
 set -e
-rm -rf $SitePath/wp-content/plugins/$slug
+PLUGIN=$SitePath/wp-content/plugins/$slug
+rm -rf \$PLUGIN
 tar -xf /tmp/$slug.tar -C $SitePath/wp-content/plugins/
-chown -R webtest:webtest $SitePath/wp-content/plugins/$slug
+
+# The runtime dependency (Dompdf) is installed here rather than shipped in the
+# repository: what git holds is the plugin's own code.
+cp /tmp/$slug-composer.json \$PLUGIN/composer.json
+cp /tmp/$slug-composer.lock \$PLUGIN/composer.lock
+cd \$PLUGIN
+composer install --no-dev --classmap-authoritative --no-interaction --quiet
+rm -f \$PLUGIN/composer.json \$PLUGIN/composer.lock
+
+chown -R webtest:webtest \$PLUGIN
 sudo -u webtest -H bash -c "cd $SitePath && $activate"
 sudo -u webtest -H bash -c "cd $SitePath && wp plugin list --format=csv --fields=name,status,version"
 "@

@@ -24,8 +24,11 @@ use Oxysoft\OxySuppliers\Persistence\Migrator;
 use Oxysoft\OxySuppliers\Persistence\PurchaseOrderRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierProductRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierRepository;
+use Oxysoft\OxySuppliers\Pdf\PdfRenderer;
+use Oxysoft\OxySuppliers\Pdf\PurchaseOrderDocument;
 use Oxysoft\OxySuppliers\Service\AuditLogger;
 use Oxysoft\OxySuppliers\Service\ProposalBuilder;
+use Oxysoft\OxySuppliers\Service\PurchaseOrderMailer;
 use Oxysoft\OxySuppliers\Service\PurchaseOrderNumbers;
 use Oxysoft\OxySuppliers\Support\Capabilities;
 
@@ -73,7 +76,20 @@ final class Plugin {
 				)
 			);
 
-			$menu->add_tab( new PurchaseOrdersScreen( $orders, $suppliers, $listings, $audit ) );
+			$document = new PurchaseOrderDocument();
+			$renderer = new PdfRenderer();
+
+			$menu->add_tab(
+				new PurchaseOrdersScreen(
+					$orders,
+					$suppliers,
+					$listings,
+					$audit,
+					$document,
+					$renderer,
+					new PurchaseOrderMailer( $document, $renderer, $audit )
+				)
+			);
 			$menu->add_tab( new SuppliersScreen( $suppliers, new SupplierValidator(), $audit ) );
 
 			$menu->register();

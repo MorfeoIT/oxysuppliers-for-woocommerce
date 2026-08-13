@@ -43,10 +43,51 @@ final class Settings {
 		// threshold's worth of breathing room.
 		'requirement_target_multiplier' => 2,
 
+		// What goes to the supplier. The placeholders are replaced when the
+		// message is prepared, and whoever sends it sees the result before
+		// pressing anything.
+		'email_subject'                 => '',
+		'email_body'                    => '',
+		'email_cc'                      => '',
+		'email_bcc'                     => '',
+
 		// Uninstalling leaves the data alone. Purchase orders are documents:
 		// nobody expects them to disappear because a plugin was removed.
 		'delete_data_on_uninstall'      => false,
 	);
+
+	/**
+	 * The default subject line, when the shop has not written its own.
+	 *
+	 * A default rather than a stored value, so that a shop that has never
+	 * touched the settings still gets it in its own language.
+	 *
+	 * @return string
+	 */
+	public static function default_email_subject(): string {
+		$stored = trim( (string) self::get( 'email_subject' ) );
+
+		/* translators: 1: purchase order number, 2: the shop's name. */
+		return '' !== $stored ? $stored : __( 'Purchase order {number} from {company}', 'oxysuppliers-for-woocommerce' );
+	}
+
+	/**
+	 * The default message, when the shop has not written its own.
+	 *
+	 * @return string
+	 */
+	public static function default_email_body(): string {
+		$stored = trim( (string) self::get( 'email_body' ) );
+
+		if ( '' !== $stored ) {
+			return $stored;
+		}
+
+		return __(
+			"Hello,\n\nplease find our purchase order {number} attached.\n\nWe would expect delivery by {expected}.\n\nThank you,\n{company}",
+			'oxysuppliers-for-woocommerce'
+		);
+	}
 
 	/**
 	 * Every setting, defaults included.

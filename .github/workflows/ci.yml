@@ -107,21 +107,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # What ships is what git archive produces, so the only way to know it is
-      # right is to build it and look inside. This job is here because the same
-      # one on OxyArea found a plugin that claimed a licence it did not ship.
-      - name: Build the distributable
-        run: |
-          git archive --format=tar --prefix=oxysuppliers-for-woocommerce/ HEAD | tar -tf - > files.txt
-          cat files.txt
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer
 
-      - name: The package must carry its licence and no development files
+      # The only way to know the package is right is to build it and look
+      # inside. This job is here because the same one on OxyArea found a plugin
+      # that claimed a licence it did not ship.
+      - name: Build the distributable
+        run: bash scripts/build-package.sh /tmp/build
+
+      - name: The package must carry its licence, its dependency, and no development files
         run: |
           set -e
-          grep -q 'oxysuppliers-for-woocommerce/LICENSE' files.txt
-          grep -q 'oxysuppliers-for-woocommerce/readme.txt' files.txt
-          grep -q 'oxysuppliers-for-woocommerce/oxysuppliers-for-woocommerce.php' files.txt
-          ! grep -q 'oxysuppliers-for-woocommerce/tests/' files.txt
-          ! grep -q 'oxysuppliers-for-woocommerce/docs/' files.txt
-          ! grep -q 'oxysuppliers-for-woocommerce/composer.json' files.txt
-          ! grep -q 'oxysuppliers-for-woocommerce/.github' files.txt
+          cd /tmp/build/oxysuppliers-for-woocommerce
+          find . -type f | sed 's|^\./||' > /tmp/files.txt
+
+          grep -qx 'LICENSE' /tmp/files.txt
+          grep -qx 'readme.txt' /tmp/files.txt
+          grep -qx 'oxysuppliers-for-woocommerce.php' /tmp/files.txt
+
+          # The one runtime dependency has to be in the box: without it the PDF
+          # is a fatal error on somebody else's site.
+          grep -qx 'vendor/autoload.php' /tmp/files.txt
+          grep -q 'vendor/dompdf/dompdf/src/Dompdf.php' /tmp/files.txt
+
+          # And nothing that is only ours.
+          ! grep -q '^tests/' /tmp/files.txt
+          ! grep -q '^docs/' /tmp/files.txt
+          ! grep -q '^scripts/' /tmp/files.txt
+          ! grep -qx 'composer.json' /tmp/files.txt
+          ! grep -q '^\.github' /tmp/files.txt
+          ! grep -q 'phpunit' /tmp/files.txt
+
+      - name: Say how big it is
+        run: du -sh /tmp/build/oxysuppliers-for-woocommerce

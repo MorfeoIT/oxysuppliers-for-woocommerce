@@ -35,6 +35,7 @@ final class AuditLogger {
 	public const OBJECT_RECEIPT  = 'receipt';
 	public const OBJECT_STOCK    = 'stock';
 
+	public const ACTION_SENT       = 'sent';
 	public const ACTION_CREATED    = 'created';
 	public const ACTION_UPDATED    = 'updated';
 	public const ACTION_DELETED    = 'deleted';
@@ -85,5 +86,62 @@ final class AuditLogger {
 		);
 
 		return false !== $written;
+	}
+
+	/**
+	 * How many times something has already happened to something.
+	 *
+	 * This is how a resend is told from a first send: the log is the only thing
+	 * that knows, because the order itself only remembers the last time it went
+	 * out.
+	 *
+	 * @param string $object_type One of the OBJECT_ constants.
+	 * @param string $object_id   Identifier of the thing.
+	 * @param string $action      One of the ACTION_ constants.
+	 * @return int
+	 */
+	public function count( string $object_type, string $object_id, string $action ): int {
+		global $wpdb;
+
+		$table = Tables::name( Tables::LOGS );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table from a constant, every value bound.
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$table} WHERE object_type = %s AND object_id = %s AND action = %s",
+				$object_type,
+				$object_id,
+				$action
+			)
+		);
+	}
+
+	/**
+	 * The most recent lines about one thing.
+	 *
+	 * @param string $object_type One of the OBJECT_ constants.
+	 * @param string $object_id   Identifier of the thing.
+	 * @param int    $limit       How many at most.
+	 * @return list<array<string,mixed>>
+	 */
+	public function history( string $object_type, string $object_id, int $limit = 20 ): array {
+		global $wpdb;
+
+		$table = Tables::name( Tables::LOGS );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table from a constant, every value bound.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT action, message, user_id, created_at FROM {$table}
+				 WHERE object_type = %s AND object_id = %s
+				 ORDER BY id DESC LIMIT %d",
+				$object_type,
+				$object_id,
+				max( 1, min( 100, $limit ) )
+			),
+			ARRAY_A
+		);
+
+		return is_array( $rows ) ? array_values( $rows ) : array();
 	}
 }
