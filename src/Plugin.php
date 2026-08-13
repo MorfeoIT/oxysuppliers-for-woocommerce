@@ -10,9 +10,12 @@ declare(strict_types=1);
 namespace Oxysoft\OxySuppliers;
 
 use Oxysoft\OxySuppliers\Admin\Menu;
+use Oxysoft\OxySuppliers\Admin\ProductSupplierPanel;
 use Oxysoft\OxySuppliers\Admin\SuppliersScreen;
+use Oxysoft\OxySuppliers\Domain\SupplierProductValidator;
 use Oxysoft\OxySuppliers\Domain\SupplierValidator;
 use Oxysoft\OxySuppliers\Persistence\Migrator;
+use Oxysoft\OxySuppliers\Persistence\SupplierProductRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierRepository;
 use Oxysoft\OxySuppliers\Service\AuditLogger;
 use Oxysoft\OxySuppliers\Support\Capabilities;
@@ -43,17 +46,23 @@ final class Plugin {
 		Capabilities::ensure_granted();
 
 		if ( is_admin() ) {
+			$suppliers = new SupplierRepository();
+			$audit     = new AuditLogger();
+
 			$menu = new Menu();
 
 			$menu->add_tab(
-				new SuppliersScreen(
-					new SupplierRepository(),
-					new SupplierValidator(),
-					new AuditLogger()
-				)
+				new SuppliersScreen( $suppliers, new SupplierValidator(), $audit )
 			);
 
 			$menu->register();
+
+			( new ProductSupplierPanel(
+				new SupplierProductRepository(),
+				$suppliers,
+				new SupplierProductValidator(),
+				$audit
+			) )->register();
 		}
 	}
 
