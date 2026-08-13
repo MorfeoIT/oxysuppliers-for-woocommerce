@@ -343,6 +343,41 @@ ORDERS_AS_EDITOR=$(get editor "$ORDERS")
 check_absent "un editor non vede gli ordini" "$ORDERS_AS_EDITOR" "New purchase order"
 
 echo
+echo "== il PDF e' dietro un permesso, non dietro un indirizzo =="
+PDF_LINK=$(printf '%s' "$CANCELLED" | grep -o "admin-post.php?action=oxysuppliers_order_pdf&#038;id=$ORDER_ID&#038;_wpnonce=[a-z0-9]*" | head -1 | sed 's/&#038;/\&/g')
+
+if [ -n "$PDF_LINK" ]; then
+	PDF_TYPE=$(curl -sS -u "$BASIC" -b "$JARS/admin" -L -o /tmp/oxs-order.pdf -w '%{content_type}' "$BASE/wp-admin/$PDF_LINK")
+
+	if [ "$PDF_TYPE" = "application/pdf" ] && head -c 5 /tmp/oxs-order.pdf | grep -q '%PDF'; then
+		pass "un amministratore lo scarica ed e' un PDF"
+	else
+		fail "un amministratore lo scarica ed e' un PDF (tipo: $PDF_TYPE)"
+	fi
+
+	# The same address, with its nonce, in somebody else's hands.
+	EDITOR_TYPE=$(curl -sS -u "$BASIC" -b "$JARS/editor" -o /tmp/oxs-editor.out -w '%{http_code}' "$BASE/wp-admin/$PDF_LINK")
+
+	if [ "$EDITOR_TYPE" = "403" ] || ! head -c 5 /tmp/oxs-editor.out | grep -q '%PDF'; then
+		pass "un editor con lo stesso indirizzo non lo ottiene"
+	else
+		fail "un editor con lo stesso indirizzo non lo ottiene (ha avuto $EDITOR_TYPE)"
+	fi
+
+	NO_NONCE_PDF=$(status_of admin "$ADMIN_POST?action=oxysuppliers_order_pdf&id=$ORDER_ID")
+
+	if [ "$NO_NONCE_PDF" = "403" ]; then
+		pass "e senza nonce nemmeno l'amministratore (403)"
+	else
+		fail "e senza nonce nemmeno l'amministratore (ho avuto $NO_NONCE_PDF)"
+	fi
+
+	rm -f /tmp/oxs-order.pdf /tmp/oxs-editor.out
+else
+	fail "il collegamento al PDF e' sulla pagina dell'ordine"
+fi
+
+echo
 echo "== ==============================="
 echo "== superati: $PASSED   falliti: $FAILED"
 rm -rf "$JARS"

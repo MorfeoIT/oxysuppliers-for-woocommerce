@@ -41,7 +41,9 @@ $currency = $order->currency;
 		.lines { margin-top: 10pt; }
 		.lines th { background: #f2f2f2; border-bottom: 1px solid #ccc; padding: 5pt; text-align: left; font-size: 9pt; }
 		.lines td { border-bottom: 1px solid #eee; padding: 5pt; }
-		.num { text-align: right; }
+		/* Both the values and the headings above them: a column of figures with
+		   its heading on the other side reads as two columns. */
+		.num, .lines th.num { text-align: right; }
 		.totals { margin-top: 8pt; width: 45%; float: right; }
 		.totals td { padding: 3pt 5pt; }
 		.totals .grand { border-top: 2px solid #333; font-weight: bold; font-size: 12pt; }
