@@ -358,10 +358,15 @@ final class GoodsReceiver {
 	 * is what lets a shop answer "what did this cost me in March".
 	 *
 	 * **A correction is not a new fact.** Reversing a receipt writes an entry
-	 * putting the previous cost back, pointing at the reversal — rather than
-	 * leaving the wrong cost standing as the latest thing known. It is the same
-	 * rule the receipts follow, and the one OxyProfit learned the hard way:
-	 * correcting in place makes two numbers stop agreeing in silence.
+	 * putting back the cost that receipt had replaced, pointing at the reversal
+	 * — rather than leaving the wrong cost standing as the latest thing known.
+	 * It is the same rule the receipts follow, and the one OxyProfit learned the
+	 * hard way: correcting in place makes two numbers stop agreeing in silence.
+	 *
+	 * If that receipt was the first ever for the article there is nothing to put
+	 * back, and the entry says so — a cost of null, meaning we do not know
+	 * again. Writing the ordered cost there instead would turn a price somebody
+	 * typed into a price somebody paid.
 	 *
 	 * @param PurchaseOrder $order   The order.
 	 * @param Receipt       $receipt The receipt.
@@ -383,10 +388,14 @@ final class GoodsReceiver {
 
 			$previous = $this->costs->cost_on( $line->product_id, $line->variation_id );
 
-			// A reversal puts back what was known before it; a delivery records
-			// what was charged.
+			// A reversal puts back what the delivery it undoes had replaced; a
+			// delivery records what was charged.
+			//
+			// Not $previous: on a reversal that *is* the figure being taken
+			// away, so putting it back would leave the wrong cost standing and
+			// the entry would say nothing at all.
 			$cost = $receipt->is_reversal()
-				? ( $previous ?? $ordered->unit_cost )
+				? $this->costs->cost_replaced_by( (int) $receipt->reverses_id, $line->product_id, $line->variation_id )
 				: ( $line->actual_cost ?? $ordered->unit_cost );
 
 			$this->costs->record(
@@ -410,10 +419,11 @@ final class GoodsReceiver {
 			 *
 			 * @since 0.1.0
 			 *
-			 * @param int                                  $product_id   Parent product.
-			 * @param int                                  $variation_id Variation, 0 for a simple product.
-			 * @param \Oxysoft\OxySuppliers\Domain\Money   $cost         What it now costs.
-			 * @param \Oxysoft\OxySuppliers\Domain\Money|null $previous  What it cost before, if known.
+			 * @param int                                     $product_id   Parent product.
+			 * @param int                                     $variation_id Variation, 0 for a simple product.
+			 * @param \Oxysoft\OxySuppliers\Domain\Money|null $cost         What it now costs — null when undoing the
+			 *                                                              first delivery has left us not knowing.
+			 * @param \Oxysoft\OxySuppliers\Domain\Money|null $previous     What it cost before, if known.
 			 */
 			do_action( 'oxysuppliers_cost_changed', $line->product_id, $line->variation_id, $cost, $previous );
 		}

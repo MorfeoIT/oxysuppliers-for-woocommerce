@@ -22,8 +22,13 @@ final class Migrator {
 
 	/**
 	 * Schema version this build expects.
+	 *
+	 * 2 — new_cost_minor became nullable. Undoing the first delivery of an
+	 * article has to leave "we do not know what this costs", and the only way
+	 * to say that in a table where nothing is ever rewritten is a row that says
+	 * nothing.
 	 */
-	public const SCHEMA_VERSION = 1;
+	public const SCHEMA_VERSION = 2;
 
 	/**
 	 * Option holding the installed schema version.
@@ -248,7 +253,7 @@ final class Migrator {
 				variation_id bigint unsigned NOT NULL DEFAULT 0,
 				currency char(3) NOT NULL,
 				old_cost_minor bigint DEFAULT NULL,
-				new_cost_minor bigint NOT NULL,
+				new_cost_minor bigint DEFAULT NULL,
 				source varchar(32) NOT NULL DEFAULT 'manual',
 				po_id bigint unsigned DEFAULT NULL,
 				receipt_id bigint unsigned DEFAULT NULL,

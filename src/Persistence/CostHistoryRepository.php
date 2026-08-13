@@ -33,13 +33,25 @@ final class CostHistoryRepository {
 	 * Write down what an article cost.
 	 *
 	 * Keys: supplier_id, product_id, variation_id, old_cost (Money|null),
-	 * new_cost (Money), source, po_id, receipt_id.
+	 * new_cost (Money|null), source, po_id, receipt_id.
+	 *
+	 * **A null new_cost is a real entry**, not a missing one: it says the thing
+	 * we thought we knew has been taken back. Undoing the first delivery of an
+	 * article leaves exactly that, and writing the ordered cost instead would
+	 * invent a fact nobody ever paid.
 	 *
 	 * @param array<string,mixed> $entry What happened.
 	 * @return int Row id, or 0 when it could not be written.
 	 */
 	public function record( array $entry ): int {
 		global $wpdb;
+
+		$new = $entry['new_cost'];
+		$old = $entry['old_cost'];
+
+		// Currency still has to be recorded when the amount is not: it says
+		// which currency stopped being known.
+		$currency = null !== $new ? $new->currency : ( null !== $old ? $old->currency : (string) get_option( 'woocommerce_currency', 'EUR' ) );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table, no WordPress API for it.
 		$written = $wpdb->insert(
@@ -48,9 +60,9 @@ final class CostHistoryRepository {
 				'supplier_id'    => $entry['supplier_id'],
 				'product_id'     => $entry['product_id'],
 				'variation_id'   => $entry['variation_id'],
-				'currency'       => $entry['new_cost']->currency,
-				'old_cost_minor' => null === $entry['old_cost'] ? null : $entry['old_cost']->minor,
-				'new_cost_minor' => $entry['new_cost']->minor,
+				'currency'       => $currency,
+				'old_cost_minor' => null === $old ? null : $old->minor,
+				'new_cost_minor' => null === $new ? null : $new->minor,
 				'source'         => $entry['source'],
 				'po_id'          => $entry['po_id'],
 				'receipt_id'     => $entry['receipt_id'],
@@ -106,11 +118,53 @@ final class CostHistoryRepository {
 			);
 		}
 
-		if ( ! is_array( $row ) ) {
+		// Two different nulls, one answer: no entry at all, and an entry saying
+		// what we knew has been taken back. Both mean we do not know.
+		if ( ! is_array( $row ) || null === $row['new_cost_minor'] ) {
 			return null;
 		}
 
 		return Money::from_minor( (int) $row['new_cost_minor'], (string) $row['currency'] );
+	}
+
+	/**
+	 * What an article cost before a given delivery was recorded.
+	 *
+	 * This is what undoing that delivery has to put back, and it is already
+	 * written down: the entry the delivery wrote says what it replaced. Asking
+	 * "what does it cost now" instead would answer with the very figure being
+	 * taken away, which is how a reversal ends up changing nothing.
+	 *
+	 * **Null is a real answer**: nothing was known before that delivery.
+	 *
+	 * @param int $receipt_id   The delivery being undone.
+	 * @param int $product_id   Parent product.
+	 * @param int $variation_id Variation, 0 for a simple product.
+	 * @return Money|null
+	 */
+	public function cost_replaced_by( int $receipt_id, int $product_id, int $variation_id = 0 ): ?Money {
+		global $wpdb;
+
+		$table = Tables::name( Tables::COST_HISTORY );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table from a constant, values bound.
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT old_cost_minor, currency FROM {$table}
+				 WHERE receipt_id = %d AND product_id = %d AND variation_id = %d
+				 ORDER BY id ASC LIMIT 1",
+				$receipt_id,
+				$product_id,
+				$variation_id
+			),
+			ARRAY_A
+		);
+
+		if ( ! is_array( $row ) || null === $row['old_cost_minor'] ) {
+			return null;
+		}
+
+		return Money::from_minor( (int) $row['old_cost_minor'], (string) $row['currency'] );
 	}
 
 	/**

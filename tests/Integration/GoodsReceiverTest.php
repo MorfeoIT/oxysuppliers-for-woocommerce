@@ -13,6 +13,7 @@ use Oxysoft\OxySuppliers\Domain\Money;
 use Oxysoft\OxySuppliers\Domain\PurchaseOrder;
 use Oxysoft\OxySuppliers\Domain\PurchaseOrderLine;
 use Oxysoft\OxySuppliers\Domain\PurchaseOrderStatus;
+use Oxysoft\OxySuppliers\Persistence\CostHistoryRepository;
 use Oxysoft\OxySuppliers\Persistence\Migrator;
 use Oxysoft\OxySuppliers\Persistence\PurchaseOrderRepository;
 use Oxysoft\OxySuppliers\Persistence\ReceiptRepository;
@@ -34,6 +35,7 @@ final class GoodsReceiverTest extends WP_UnitTestCase {
 	private GoodsReceiver $receiver;
 	private PurchaseOrderRepository $orders;
 	private ReceiptRepository $receipts;
+	private CostHistoryRepository $costs;
 
 	/**
 	 * Empty tables and the collaborators.
@@ -53,7 +55,7 @@ final class GoodsReceiverTest extends WP_UnitTestCase {
 		delete_option( Migrator::VERSION_OPTION );
 		( new Migrator() )->migrate();
 
-		foreach ( array( Tables::RECEIPT_ITEMS, Tables::RECEIPTS, Tables::ORDER_ITEMS, Tables::PURCHASE_ORDERS, Tables::LOGS ) as $table ) {
+		foreach ( array( Tables::RECEIPT_ITEMS, Tables::RECEIPTS, Tables::ORDER_ITEMS, Tables::PURCHASE_ORDERS, Tables::LOGS, Tables::COST_HISTORY ) as $table ) {
 			$name = Tables::name( $table );
 
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Test fixture, table name from a constant.
@@ -62,7 +64,8 @@ final class GoodsReceiverTest extends WP_UnitTestCase {
 
 		$this->orders   = new PurchaseOrderRepository( new PurchaseOrderNumbers() );
 		$this->receipts = new ReceiptRepository();
-		$this->receiver = new GoodsReceiver( $this->receipts, $this->orders, new AuditLogger() );
+		$this->costs    = new CostHistoryRepository();
+		$this->receiver = new GoodsReceiver( $this->receipts, $this->orders, new AuditLogger(), $this->costs );
 	}
 
 	/**
@@ -535,5 +538,71 @@ final class GoodsReceiverTest extends WP_UnitTestCase {
 			1,
 			$audit->count( AuditLogger::OBJECT_RECEIPT, (string) $outcome->receipt->id, AuditLogger::ACTION_CREATED )
 		);
+	}
+
+	/**
+	 * A delivery records what was charged, not what was ordered.
+	 *
+	 * @return void
+	 */
+	public function test_the_cost_recorded_is_the_one_charged(): void {
+		$order = $this->sent_order();
+
+		$this->receiver->receive( $order, array( $order->lines[0]->id => 5 ), array( $order->lines[0]->id => '11,50' ), 'primo' );
+
+		$cost = $this->costs->cost_on( 100, 0 );
+
+		$this->assertNotNull( $cost );
+		$this->assertSame( 1150, $cost->minor );
+	}
+
+	/**
+	 * Undoing a delivery puts back the cost that delivery replaced.
+	 *
+	 * The bug this stands guard over: asking "what does it cost now" answers
+	 * with the very figure being taken away, so the reversal wrote the wrong
+	 * cost a second time and nothing changed. The right answer was already on
+	 * the reversed entry, in the column saying what it had replaced.
+	 *
+	 * @return void
+	 */
+	public function test_undoing_a_delivery_puts_the_earlier_cost_back(): void {
+		$order = $this->sent_order();
+
+		$this->receiver->receive( $order, array( $order->lines[0]->id => 5 ), array( $order->lines[0]->id => '11,50' ), 'primo' );
+
+		$order  = $this->orders->find( $order->id );
+		$second = $this->receiver->receive( $order, array( $order->lines[0]->id => 5 ), array( $order->lines[0]->id => '11,80' ), 'secondo' );
+
+		$this->assertSame( 1180, $this->costs->cost_on( 100, 0 )->minor );
+
+		$this->receiver->reverse( $second->receipt, 'annullo-secondo' );
+
+		$back = $this->costs->cost_on( 100, 0 );
+
+		$this->assertNotNull( $back, 'la correzione ha lasciato il costo sconosciuto' );
+		$this->assertSame( 1150, $back->minor );
+
+		// Three entries, because nothing is ever rewritten.
+		$this->assertSame( 3, $this->costs->count_for( 100, 0 ) );
+	}
+
+	/**
+	 * Undoing the first delivery of all leaves us not knowing, rather than
+	 * inventing the ordered cost.
+	 *
+	 * @return void
+	 */
+	public function test_undoing_the_first_delivery_leaves_no_cost(): void {
+		$order = $this->sent_order();
+
+		$first = $this->receiver->receive( $order, array( $order->lines[0]->id => 5 ), array( $order->lines[0]->id => '11,50' ), 'unico' );
+
+		$this->receiver->reverse( $first->receipt, 'annullo-unico' );
+
+		$this->assertNull( $this->costs->cost_on( 100, 0 ) );
+
+		// And the entry saying so is there: it is an answer, not an absence.
+		$this->assertSame( 2, $this->costs->count_for( 100, 0 ) );
 	}
 }
