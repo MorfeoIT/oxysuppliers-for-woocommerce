@@ -395,6 +395,76 @@ else
 fi
 
 echo
+echo "== ricezione merce: lo stesso modulo inviato due volte =="
+
+# A fresh order, already sent, for a product the seeded shop really has.
+mysql_run "INSERT INTO oxs_oxysuppliers_purchase_orders (po_number, supplier_id, status, currency, order_date, created_at, updated_at) VALUES ('PO-RIC-1', $SUPPLIER_ID, 'sent', 'EUR', CURDATE(), NOW(), NOW())"
+RECV_ID=$(sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp db query \"SELECT id FROM oxs_oxysuppliers_purchase_orders WHERE po_number = 'PO-RIC-1'\" --skip-column-names")
+MOUSE_ID=$(sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp db query \"SELECT ID FROM oxs_posts WHERE post_name = 'mouse-x-wireless' OR post_title = 'Mouse X wireless' LIMIT 1\" --skip-column-names")
+mysql_run "INSERT INTO oxs_oxysuppliers_purchase_order_items (po_id, product_id, sku, supplier_sku, description, qty_ordered, qty_received, unit_cost_minor, line_total_minor) VALUES ($RECV_ID, $MOUSE_ID, 'MOUSE-X', 'F-MX', 'Mouse X wireless', 30, 0, 1180, 35400)"
+LINE_ID=$(sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp db query \"SELECT id FROM oxs_oxysuppliers_purchase_order_items WHERE po_id = $RECV_ID\" --skip-column-names")
+
+stock_now() {
+	sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp eval 'wc_delete_product_transients( $MOUSE_ID ); echo (int) wc_get_product( $MOUSE_ID )->get_stock_quantity();'"
+}
+
+ORDER_PAGE=$(get admin "$ORDERS&action=view&id=$RECV_ID")
+check "il modulo di ricezione c'e'" "$ORDER_PAGE" "Receive what has arrived"
+check "con la sua chiave di idempotenza" "$ORDER_PAGE" 'name="idempotency_key"'
+
+# Exactly what a browser would send — and then exactly the same thing again,
+# which is what a double click, a reload or a retried request produces.
+# The page carries three forms, so the nonce has to come from inside the right
+# one: everything after the receiving form's action field, first nonce found.
+RECV_NONCE=$(printf '%s' "$ORDER_PAGE" | sed -n '/value="oxysuppliers_receive_order"/,$p' | grep -o 'name="_wpnonce" value="[^"]*"' | head -1 | sed 's/.*value="//;s/"//')
+RECV_KEY=$(printf '%s' "$ORDER_PAGE" | grep -o 'name="idempotency_key" value="[^"]*"' | head -1 | sed 's/.*value="//;s/"//')
+BODY="action=oxysuppliers_receive_order&_wpnonce=$RECV_NONCE&id=$RECV_ID&idempotency_key=$RECV_KEY&received%5B$LINE_ID%5D=10&reference=DDT-HTTP"
+
+STOCK_BEFORE=$(stock_now)
+FIRST=$(post admin "$ADMIN_POST" "$BODY")
+STOCK_AFTER_ONE=$(stock_now)
+
+check "la prima volta registra la consegna" "$FIRST" "Delivery recorded"
+
+if [ "$STOCK_AFTER_ONE" = "$((STOCK_BEFORE + 10))" ]; then
+	pass "e la giacenza sale di dieci ($STOCK_BEFORE -> $STOCK_AFTER_ONE)"
+else
+	fail "e la giacenza sale di dieci ($STOCK_BEFORE -> $STOCK_AFTER_ONE)"
+fi
+
+SECOND=$(post admin "$ADMIN_POST" "$BODY")
+STOCK_AFTER_TWO=$(stock_now)
+
+check "la seconda volta lo dice invece di rifarlo" "$SECOND" "had already been recorded"
+
+if [ "$STOCK_AFTER_TWO" = "$STOCK_AFTER_ONE" ]; then
+	pass "E LA GIACENZA NON SI MUOVE ($STOCK_AFTER_TWO)"
+else
+	fail "E LA GIACENZA NON SI MUOVE ($STOCK_AFTER_ONE -> $STOCK_AFTER_TWO)"
+fi
+
+RECEIPTS=$(sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp db query \"SELECT COUNT(*) FROM oxs_oxysuppliers_receipts WHERE po_id = $RECV_ID\" --skip-column-names")
+
+if [ "$RECEIPTS" = "1" ]; then
+	pass "e resta una sola ricezione"
+else
+	fail "e resta una sola ricezione (ne ho trovate $RECEIPTS)"
+fi
+
+echo
+echo "== e chi non ha il permesso non riceve niente =="
+NO_NONCE_RECV=$(status_of admin "$ADMIN_POST?action=oxysuppliers_receive_order&id=$RECV_ID")
+
+if [ "$NO_NONCE_RECV" = "403" ]; then
+	pass "senza nonce viene rifiutato (403)"
+else
+	fail "senza nonce viene rifiutato (ho avuto $NO_NONCE_RECV)"
+fi
+
+RECV_AS_EDITOR=$(get editor "$ORDERS&action=view&id=$RECV_ID")
+check_absent "un editor non vede il modulo di ricezione" "$RECV_AS_EDITOR" "Receive what has arrived"
+
+echo
 echo "== ==============================="
 echo "== superati: $PASSED   falliti: $FAILED"
 rm -rf "$JARS"
