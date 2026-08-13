@@ -129,6 +129,30 @@ annullamento come movimento inverso, costo effettivo registrato.
 solo qui» sono verdi sul banco di prova, doppio invio e concorrenza compresi.
 **Questo sprint non si chiude sui soli test unit.**
 
+**Fatto il 13/08/2026**, e la prova che conta è stata fatta su HTTP vero: lo
+stesso identico modulo inviato due volte con curl, la giacenza di MOUSE-X che
+passa da −2 a 8 alla prima e **resta 8** alla seconda, con una sola ricezione a
+database.
+
+Le quattro difese sono nel codice nell'ordine in cui vanno lette
+(`GoodsReceiver`): chiave di idempotenza scritta **per prima**, blocco
+sull'ordine, quantità rilette **dentro** la transazione dalle ricezioni e non
+dalla copia sulla riga d'ordine, transazione su tutto quello che è nostro. Lo
+stock si muove **dopo** il commit e fuori dalla transazione, con l'incremento
+atomico di WooCommerce.
+
+**Due difetti trovati, tutti e due invisibili ai test unit:**
+
+- il token del blocco era un UUID da 36 caratteri in una colonna `char(32)`.
+  MySQL lo troncava in silenzio, `unlock` non trovava più la riga, e ogni
+  ricezione dopo la prima rispondeva «occupato». È esattamente la classe di
+  errore descritta in `02_MODELLO_DATI.md` — «MySQL tronca in silenzio» — presa
+  in casa propria;
+- l'annullamento **non rimetteva a posto la giacenza**, perché chiedeva a una
+  copia dell'oggetto letta *prima* che lo stock si muovesse. Ora si rilegge dal
+  database. Questo l'ha trovato solo il banco, perché in CI non c'è WooCommerce
+  e nessuno stock si muove.
+
 ## Sprint 7 — merce in arrivo, report, integrazione
 
 Quantità ordinata e ETA sul prodotto (§15), i quattro report FREE, hook e filtri

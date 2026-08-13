@@ -63,7 +63,8 @@ vero.
 | Sprint 3 | schermata dei fabbisogni, vendite 7/30/90, merce in arrivo, esportazione CSV |
 | Sprint 4 | ordini fornitore, numerazione unica, macchina a stati, proposte raggruppate per fornitore |
 | Sprint 5 | PDF dell'ordine con template sovrascrivibile, invio al fornitore, storia dell'ordine |
-| Prove | 89 unit su PHP 8.1→8.4, 57 dentro WordPress 7.0.4, 84 via HTTP, 94 sul negozio seminato |
+| Sprint 6 | ricezioni totali, parziali e per riga; quattro difese contro la doppia ricezione; annullamento come movimento inverso |
+| Prove | 89 unit su PHP 8.1→8.4, 74 dentro WordPress 7.0.4, 93 via HTTP, 115 sul negozio seminato |
 | Qualità | PHPCS, PHPStan livello 8 e Plugin Check puliti |
 | Pacchetto | ~11 MB, di cui 8 sono Dompdf e i suoi font |
 
@@ -75,7 +76,8 @@ unico e non un contatore.
 Banco di prova: <https://test.44123.it/oxysuppliers> (WooCommerce 11, HPOS
 attivo). Deploy con `scripts\deploy-test-site.ps1`.
 
-Prossimo passo: Sprint 6, le ricezioni — quello delicato.
+Prossimo passo: Sprint 7 (merce in arrivo sul prodotto, report, REST, import CSV)
+e Sprint 8 (prontezza al rilascio).
 
 ## Come si costruisce il pacchetto
 

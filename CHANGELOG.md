@@ -5,6 +5,37 @@ oxywp.com is generated from `readme.txt`, which follows this file.
 
 ## [Unreleased]
 
+### Sprint 6 — goods receipts (13/08/2026)
+
+The sprint where being wrong means a shop sells what it has not got. Receiving
+is defended four times over, in this order:
+
+1. **An idempotency key**, generated when the form is drawn and written before
+   anything else, with a unique index behind it. A double click, a reload, a
+   back button, a browser retrying a timed-out request — all carry the same key,
+   and the database refuses the second.
+2. **A lock on the order**, so two people receiving the same delivery at the
+   same moment do not both succeed.
+3. **The outstanding quantity is read again inside the transaction**, from the
+   receipts themselves — not from the copy on the order line, and certainly not
+   from the numbers the page was drawn with.
+4. **A transaction** around everything the plugin owns.
+
+- Stock is moved **after** the commit and outside the transaction, with
+  WooCommerce's own atomic increment. Reading it and writing it back would leave
+  room for a customer's order to land in between and be overwritten.
+- An article WooCommerce is not counting still gets its delivery recorded, with
+  the reason written on the line.
+- Every movement is written down with the value before and after.
+- **A mistake is corrected by an opposite entry, never by deleting one.** Both
+  stay, so the history still reads; the stock goes back; and a correction cannot
+  itself be corrected.
+- Full, partial and per-line receiving, with the price actually charged kept
+  next to the price that was ordered.
+- 89 unit tests, 74 checks inside WordPress, 93 over HTTP, 115 against the
+  seeded shop — including posting the very same form twice and watching the
+  stock go up once.
+
 ### Sprint 5 — the document and the envelope (13/08/2026)
 
 - **A real PDF**, from an overridable template: copy `purchase-order.php` into
