@@ -240,11 +240,23 @@ done
 echo
 echo "== il pannello Fornitori sulla scheda prodotto =="
 PRODUCT_ID=$(sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp db query \"SELECT ID FROM oxs_posts WHERE post_type='product' AND post_status='publish' LIMIT 1\" --skip-column-names")
+# Two states, and the empty one is the one people meet first: a shop that has
+# just installed the plugin has no suppliers, and the panel has to say what to
+# do about it rather than show an empty table.
 PRODUCT=$(get admin "$BASE/wp-admin/post.php?post=$PRODUCT_ID&action=edit")
 check "la scheda si apre" "$PRODUCT" "woocommerce_options_panel"
 check "c'e' la linguetta Fornitori" "$PRODUCT" "oxysuppliers_product_data"
-check "con la sua tabella" "$PRODUCT" "oxysuppliers-lines"
 check "e il suo nonce" "$PRODUCT" "oxysuppliers_product_nonce"
+check "senza fornitori invita ad aggiungerne uno" "$PRODUCT" "Add the first one"
+
+FORM=$(get admin "$SUPPLIERS&action=new")
+NONCE=$(nonce_from "$FORM")
+post admin "$ADMIN_POST" "action=oxysuppliers_save_supplier&_wpnonce=$NONCE&id=0&company_name=Fornitore+Del+Pannello&currency=EUR&lead_time_days=4" > /dev/null
+
+PRODUCT=$(get admin "$BASE/wp-admin/post.php?post=$PRODUCT_ID&action=edit")
+check "con un fornitore compare la tabella" "$PRODUCT" "oxysuppliers-lines"
+check "e il fornitore e' fra le scelte" "$PRODUCT" "Fornitore Del Pannello"
+check "con la riga vuota per aggiungerne uno" "$PRODUCT" "oxysuppliers_lines[rows][new]"
 
 PRODUCT_AS_EDITOR=$(get editor "$BASE/wp-admin/post.php?post=$PRODUCT_ID&action=edit")
 check_absent "un editor non vede il pannello" "$PRODUCT_AS_EDITOR" "oxysuppliers_product_data"
