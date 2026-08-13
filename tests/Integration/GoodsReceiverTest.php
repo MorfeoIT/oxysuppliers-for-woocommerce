@@ -45,6 +45,12 @@ final class GoodsReceiverTest extends WP_UnitTestCase {
 
 		global $wpdb;
 
+		// The schema is rebuilt for every test rather than inherited from whichever
+		// one ran first. The harness makes its tables TEMPORARY, and a test that
+		// commits or rolls back on its own can take them with it while the option
+		// saying "already migrated" survives — after which the migrator politely
+		// does nothing and every later test fails on a table that is not there.
+		delete_option( Migrator::VERSION_OPTION );
 		( new Migrator() )->migrate();
 
 		foreach ( array( Tables::RECEIPT_ITEMS, Tables::RECEIPTS, Tables::ORDER_ITEMS, Tables::PURCHASE_ORDERS, Tables::LOGS ) as $table ) {
