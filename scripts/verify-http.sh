@@ -226,6 +226,18 @@ for what in created updated status_changed deleted; do
 done
 
 echo
+echo "== il pannello Fornitori sulla scheda prodotto =="
+PRODUCT_ID=$(sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp db query \"SELECT ID FROM oxs_posts WHERE post_type='product' AND post_status='publish' LIMIT 1\" --skip-column-names")
+PRODUCT=$(get admin "$BASE/wp-admin/post.php?post=$PRODUCT_ID&action=edit")
+check "la scheda si apre" "$PRODUCT" "woocommerce_options_panel"
+check "c'e' la linguetta Fornitori" "$PRODUCT" "oxysuppliers_product_data"
+check "con la sua tabella" "$PRODUCT" "oxysuppliers-lines"
+check "e il suo nonce" "$PRODUCT" "oxysuppliers_product_nonce"
+
+PRODUCT_AS_EDITOR=$(get editor "$BASE/wp-admin/post.php?post=$PRODUCT_ID&action=edit")
+check_absent "un editor non vede il pannello" "$PRODUCT_AS_EDITOR" "oxysuppliers_product_data"
+
+echo
 echo "== ==============================="
 echo "== superati: $PASSED   falliti: $FAILED"
 rm -rf "$JARS"
