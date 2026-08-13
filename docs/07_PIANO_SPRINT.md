@@ -95,6 +95,30 @@ registrazione di invio e reinvio. Audit log con rotazione.
 *Chiuso quando:* il PDF non è raggiungibile senza capability; l'email finisce in
 `mail.log` sul banco; il reinvio è distinguibile dal primo invio nel log.
 
+**Fatto il 13/08/2026.** Tutti e tre provati, e in più il PDF è stato riletto
+davvero (con `pdftotext` e `pdftoppm` sul banco) per controllare che gli accenti
+sopravvivano: un fornitore che si chiama «Però» non deve uscire «Per».
+
+**La libreria PDF è Dompdf, inclusa nel pacchetto** (decisione dell'utente del
+13/08/2026). Costo reale, misurato e non stimato: il pacchetto passa da ~0,5 MB
+a **~11 MB**, di cui 8 sono Dompdf e i suoi font. Ne sono stati tolti due —
+DejaVu Serif e DejaVu Sans Mono, che il documento non chiede mai — per 3,4 MB in
+meno. **DejaVu Sans resta**: è quello che porta gli accenti.
+
+Tre decisioni di sicurezza, che sono tali e non preferenze:
+
+- il PDF **non si scrive mai** in `uploads/`. Si genera al volo dietro capability
+  e nonce, e l'allegato vive nella cartella temporanea per la durata di un invio;
+- il renderer **non può raggiungere la rete** (`setIsRemoteEnabled(false)`) e non
+  può leggere fuori da `uploads/` (chroot). Un template è HTML, e dell'HTML che
+  può fare richieste è una via d'uscita dall'edificio;
+- il logo si **incorpora come data URI**, letto da disco, proprio per non dover
+  fare nessuna richiesta.
+
+E una cosa imparata da Plugin Check: se il pacchetto porta una cartella
+`vendor/`, deve portare anche il `composer.json` che dice cosa c'è dentro.
+Toglierlo fa apparire il plugin come uno che chiede fiducia.
+
 ## Sprint 6 — ricezioni
 
 Il cuore del plugin. Ricezione totale, per riga, parziale. Chiave di

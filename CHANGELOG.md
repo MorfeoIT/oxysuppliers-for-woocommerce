@@ -5,6 +5,34 @@ oxywp.com is generated from `readme.txt`, which follows this file.
 
 ## [Unreleased]
 
+### Sprint 5 — the document and the envelope (13/08/2026)
+
+- **A real PDF**, from an overridable template: copy `purchase-order.php` into
+  `oxysuppliers/` in your theme and it wins. Dompdf is bundled, so nothing has
+  to be installed for it to work.
+- **The PDF is behind a permission, not behind an address.** It is built on the
+  way out, never written into the uploads folder, and needs both the capability
+  and a nonce. A purchase order sitting in `wp-content/uploads` is one guessed
+  URL away from anybody.
+- The renderer cannot reach the network and cannot read outside the uploads
+  folder. A template is HTML, and HTML that can fetch is a way out of the
+  building.
+- **Sending to the supplier**, with the recipient, subject and message shown and
+  editable before anything is pressed. Sending is the one thing here that cannot
+  be undone.
+- **A resend is not a first send.** The order only remembers the last time it
+  went out, so the log is what knows: the second send says so, and moving the
+  order along happens once.
+- The attachment lives in the system temp directory for the length of one send
+  and is deleted straight after.
+- Every order carries its own history on screen: created, saved, sent, sent
+  again.
+- The package is built by `scripts/build-package.sh` and carries `composer.json`
+  so a reviewer can see what is in the box. Two DejaVu families the document
+  never asks for are trimmed out, which is 3.4 MB nobody downloads on purpose.
+- 89 unit tests, 57 checks inside WordPress, 84 over HTTP, 29 against the seeded
+  shop — including reading a generated PDF back to check the accents survived.
+
 ### Sprint 4 — purchase orders (13/08/2026)
 
 - Purchase orders with their lines, a list that filters by supplier, state and

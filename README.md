@@ -62,8 +62,10 @@ vero.
 | Sprint 2 | listini prodotto-fornitore, arrotondamento delle quantità, fornitore preferenziale, pannello sulla scheda prodotto |
 | Sprint 3 | schermata dei fabbisogni, vendite 7/30/90, merce in arrivo, esportazione CSV |
 | Sprint 4 | ordini fornitore, numerazione unica, macchina a stati, proposte raggruppate per fornitore |
-| Prove | 89 unit su PHP 8.1→8.4, 57 dentro WordPress 7.0.4, 76 via HTTP, 65 sul negozio seminato |
+| Sprint 5 | PDF dell'ordine con template sovrascrivibile, invio al fornitore, storia dell'ordine |
+| Prove | 89 unit su PHP 8.1→8.4, 57 dentro WordPress 7.0.4, 84 via HTTP, 94 sul negozio seminato |
 | Qualità | PHPCS, PHPStan livello 8 e Plugin Check puliti |
+| Pacchetto | ~11 MB, di cui 8 sono Dompdf e i suoi font |
 
 Due numeri che vale la pena tenere d'occhio: la schermata dei fabbisogni costa
 **sette query, che siano cinque righe o duecento**, e due ordini salvati nello
@@ -73,4 +75,16 @@ unico e non un contatore.
 Banco di prova: <https://test.44123.it/oxysuppliers> (WooCommerce 11, HPOS
 attivo). Deploy con `scripts\deploy-test-site.ps1`.
 
-Prossimo passo: Sprint 5, PDF ed email.
+Prossimo passo: Sprint 6, le ricezioni — quello delicato.
+
+## Come si costruisce il pacchetto
+
+```bash
+bash scripts/build-package.sh
+```
+
+Quello che si distribuisce è quello che produce `git archive` (quindi le regole
+`export-ignore` in `.gitattributes` sono la distinta) **più** l'unica dipendenza
+di runtime, installata lì e non tenuta nel repository. Va eseguito su Linux:
+`Compress-Archive` di PowerShell scrive i separatori con la barra rovescia e
+WordPress si ritrova un file solo chiamato `plugin\src\Plugin.php`.

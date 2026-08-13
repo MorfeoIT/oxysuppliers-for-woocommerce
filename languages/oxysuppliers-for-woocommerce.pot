@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-13T21:34:10+02:00\n"
+"POT-Creation-Date: 2026-08-13T21:57:40+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: oxysuppliers-for-woocommerce\n"
@@ -73,27 +73,28 @@ msgid "No suppliers yet."
 msgstr ""
 
 #: src/Admin/ProductSupplierPanel.php:166
-#: src/Admin/PurchaseOrdersScreen.php:322
+#: src/Admin/PurchaseOrdersScreen.php:336
 msgid "Add the first one."
 msgstr ""
 
 #: src/Admin/ProductSupplierPanel.php:185
-#: src/Admin/PurchaseOrdersScreen.php:223
-#: src/Admin/PurchaseOrdersScreen.php:341
+#: src/Admin/PurchaseOrdersScreen.php:237
+#: src/Admin/PurchaseOrdersScreen.php:355
 #: src/Admin/RequirementsScreen.php:139
 #: src/Admin/RequirementsScreen.php:500
 #: src/Admin/SuppliersScreen.php:201
+#: src/Pdf/PurchaseOrderDocument.php:178
 msgid "Supplier"
 msgstr ""
 
 #: src/Admin/ProductSupplierPanel.php:186
-#: src/Admin/PurchaseOrdersScreen.php:418
-#: src/Admin/PurchaseOrdersScreen.php:550
+#: src/Admin/PurchaseOrdersScreen.php:433
+#: src/Admin/PurchaseOrdersScreen.php:565
 msgid "Their code"
 msgstr ""
 
 #: src/Admin/ProductSupplierPanel.php:187
-#: src/Admin/PurchaseOrdersScreen.php:551
+#: src/Admin/PurchaseOrdersScreen.php:566
 msgid "Cost"
 msgstr ""
 
@@ -119,7 +120,7 @@ msgid "Preferred"
 msgstr ""
 
 #: src/Admin/ProductSupplierPanel.php:193
-#: src/Admin/PurchaseOrdersScreen.php:424
+#: src/Admin/PurchaseOrdersScreen.php:439
 msgid "Remove"
 msgstr ""
 
@@ -146,63 +147,67 @@ msgstr ""
 msgid "The line for %s was not saved: check the cost and the quantities."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:83
-#: src/Admin/PurchaseOrdersScreen.php:176
+#: src/Admin/PurchaseOrdersScreen.php:95
+#: src/Admin/PurchaseOrdersScreen.php:190
 msgid "Purchase orders"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:113
+#: src/Admin/PurchaseOrdersScreen.php:127
+#: src/Admin/PurchaseOrdersScreen.php:796
 msgid "You are not allowed to see purchase orders."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:179
-#: src/Admin/PurchaseOrdersScreen.php:316
+#: src/Admin/PurchaseOrdersScreen.php:193
+#: src/Admin/PurchaseOrdersScreen.php:330
 msgid "New purchase order"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:190
+#: src/Admin/PurchaseOrdersScreen.php:204
 msgid "Number or reference"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:193
+#: src/Admin/PurchaseOrdersScreen.php:207
 #: src/Admin/RequirementsScreen.php:395
 msgid "Any supplier"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:202
+#: src/Admin/PurchaseOrdersScreen.php:216
 msgid "Any status"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:212
+#: src/Admin/PurchaseOrdersScreen.php:226
 msgid "Late"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:215
+#: src/Admin/PurchaseOrdersScreen.php:229
 #: src/Admin/RequirementsScreen.php:418
 msgid "Filter"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:222
+#: src/Admin/PurchaseOrdersScreen.php:236
+#: src/Pdf/PurchaseOrderDocument.php:175
 msgid "Number"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:224
-#: src/Admin/PurchaseOrdersScreen.php:419
+#: src/Admin/PurchaseOrdersScreen.php:238
+#: src/Admin/PurchaseOrdersScreen.php:434
 msgid "Ordered"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:225
-#: src/Admin/PurchaseOrdersScreen.php:357
-#: src/Admin/PurchaseOrdersScreen.php:488
+#: src/Admin/PurchaseOrdersScreen.php:239
+#: src/Admin/PurchaseOrdersScreen.php:371
+#: src/Admin/PurchaseOrdersScreen.php:503
+#: src/Pdf/PurchaseOrderDocument.php:177
 msgid "Expected"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:226
-#: src/Admin/PurchaseOrdersScreen.php:472
+#: src/Admin/PurchaseOrdersScreen.php:240
+#: src/Admin/PurchaseOrdersScreen.php:487
+#: src/Pdf/PurchaseOrderDocument.php:184
 msgid "Total"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:227
+#: src/Admin/PurchaseOrdersScreen.php:241
 #: src/Admin/RequirementsScreen.php:141
 #: src/Admin/RequirementsScreen.php:507
 #: src/Admin/SuppliersScreen.php:207
@@ -210,203 +215,279 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:234
+#: src/Admin/PurchaseOrdersScreen.php:248
 msgid "No purchase order yet. Start one from the reordering screen, or add one by hand."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:265
+#: src/Admin/PurchaseOrdersScreen.php:279
 msgid "late"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:310
-#: src/Admin/PurchaseOrdersScreen.php:626
+#: src/Admin/PurchaseOrdersScreen.php:324
+#: src/Admin/PurchaseOrdersScreen.php:911
 #: src/Admin/RequirementsScreen.php:555
 msgid "You are not allowed to create purchase orders."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:320
+#: src/Admin/PurchaseOrdersScreen.php:334
 msgid "There are no suppliers yet."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:331
+#: src/Admin/PurchaseOrdersScreen.php:345
 msgid "Choose who it is for. The articles are added on the next screen, from that supplier's price list."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:351
+#: src/Admin/PurchaseOrdersScreen.php:365
 msgid "Order date"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:360
+#: src/Admin/PurchaseOrdersScreen.php:374
 msgid "Left empty, it is worked out from the supplier's lead time."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:367
+#: src/Admin/PurchaseOrdersScreen.php:381
 msgid "Start the order"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:368
-#: src/Admin/PurchaseOrdersScreen.php:1004
+#: src/Admin/PurchaseOrdersScreen.php:382
+#: src/Admin/PurchaseOrdersScreen.php:1289
 #: src/Admin/SuppliersScreen.php:467
 #: src/Admin/SuppliersScreen.php:599
 msgid "Cancel"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:389
-#: src/Admin/PurchaseOrdersScreen.php:1111
+#: src/Admin/PurchaseOrdersScreen.php:403
+#: src/Admin/PurchaseOrdersScreen.php:1396
 msgid "Back to the list"
 msgstr ""
 
 #. translators: 1: order date, 2: expected date.
-#: src/Admin/PurchaseOrdersScreen.php:399
+#: src/Admin/PurchaseOrdersScreen.php:413
 #, php-format
 msgid "Ordered %1$s, expected %2$s"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:417
-#: src/Admin/PurchaseOrdersScreen.php:549
+#: src/Admin/PurchaseOrdersScreen.php:432
+#: src/Admin/PurchaseOrdersScreen.php:564
 #: src/Admin/RequirementsScreen.php:135
 #: src/Admin/RequirementsScreen.php:490
+#: src/Pdf/PurchaseOrderDocument.php:181
 msgid "Article"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:420
-#: src/Admin/PurchaseOrdersScreen.php:985
+#: src/Admin/PurchaseOrdersScreen.php:435
+#: src/Admin/PurchaseOrdersScreen.php:1270
 msgid "Received"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:421
+#: src/Admin/PurchaseOrdersScreen.php:436
 #: src/Admin/RequirementsScreen.php:502
 msgid "Unit cost"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:422
+#: src/Admin/PurchaseOrdersScreen.php:437
 msgid "Line total"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:430
+#: src/Admin/PurchaseOrdersScreen.php:445
 msgid "Nothing on this order yet."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:484
+#: src/Admin/PurchaseOrdersScreen.php:499
 msgid "Details"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:492
+#: src/Admin/PurchaseOrdersScreen.php:507
 msgid "Their reference"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:496
+#: src/Admin/PurchaseOrdersScreen.php:511
 msgid "Notes for the supplier"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:500
+#: src/Admin/PurchaseOrdersScreen.php:515
 msgid "Notes for us"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:507
+#: src/Admin/PurchaseOrdersScreen.php:522
 msgid "Save the order"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:545
+#: src/Admin/PurchaseOrdersScreen.php:560
 msgid "Add from the price list"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:552
+#: src/Admin/PurchaseOrdersScreen.php:567
+#: src/Pdf/PurchaseOrderDocument.php:182
 msgid "Quantity"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:570
+#: src/Admin/PurchaseOrdersScreen.php:585
 msgid "Fill in a quantity and save. Quantities are taken as they are typed here: the supplier's minimum and multiple are applied on the reordering screen, not to a line somebody has decided by hand."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:694
-#: src/Admin/PurchaseOrdersScreen.php:784
-msgid "You are not allowed to change purchase orders."
+#: src/Admin/PurchaseOrdersScreen.php:653
+msgid "Download the PDF"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:795
-msgid "You are not allowed to send purchase orders."
+#: src/Admin/PurchaseOrdersScreen.php:661
+msgid "Send it to the supplier"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:980
-msgid "Draft"
+#. translators: 1: how many times it has been sent, 2: when it last went.
+#: src/Admin/PurchaseOrdersScreen.php:670
+#, php-format
+msgid "This order has already been sent %1$d time, on %2$s. Sending it again will send another email."
+msgid_plural "This order has already been sent %1$d times, the last on %2$s. Sending it again will send another email."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/PurchaseOrdersScreen.php:693
+msgid "To"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:981
-msgid "To send"
+#: src/Admin/PurchaseOrdersScreen.php:699
+msgid "This supplier has no orders email on file. Type one, or add it to the supplier."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:982
-msgid "Sent"
+#: src/Admin/PurchaseOrdersScreen.php:705
+msgid "Cc"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:983
-msgid "Confirmed"
+#: src/Admin/PurchaseOrdersScreen.php:709
+msgid "Bcc"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:984
-#: src/Admin/PurchaseOrdersScreen.php:1002
-msgid "Partly received"
+#: src/Admin/PurchaseOrdersScreen.php:713
+msgid "Subject"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:986
-msgid "Cancelled"
+#: src/Admin/PurchaseOrdersScreen.php:720
+msgid "Message"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:998
-msgid "Back to draft"
+#: src/Admin/PurchaseOrdersScreen.php:727
+msgid "The PDF goes with it as an attachment."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:999
-msgid "Ready to send"
+#: src/Admin/PurchaseOrdersScreen.php:737
+msgid "Send it again"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:1000
-msgid "Mark as sent"
+#: src/Admin/PurchaseOrdersScreen.php:738
+msgid "Send to the supplier"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:1001
-msgid "Supplier confirmed"
+#: src/Admin/PurchaseOrdersScreen.php:765
+msgid "History"
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:1003
-msgid "All received"
-msgstr ""
-
-#: src/Admin/PurchaseOrdersScreen.php:1110
-#: src/Admin/PurchaseOrdersScreen.php:1133
+#: src/Admin/PurchaseOrdersScreen.php:802
+#: src/Admin/PurchaseOrdersScreen.php:1395
+#: src/Admin/PurchaseOrdersScreen.php:1421
 msgid "That purchase order no longer exists."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:1129
+#: src/Admin/PurchaseOrdersScreen.php:810
+msgid "The PDF could not be made. The plugin may be missing part of its installation."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:833
+#: src/Admin/PurchaseOrdersScreen.php:1080
+msgid "You are not allowed to send purchase orders."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:979
+#: src/Admin/PurchaseOrdersScreen.php:1069
+msgid "You are not allowed to change purchase orders."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1265
+msgid "Draft"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1266
+msgid "To send"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1267
+msgid "Sent"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1268
+msgid "Confirmed"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1269
+#: src/Admin/PurchaseOrdersScreen.php:1287
+msgid "Partly received"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1271
+msgid "Cancelled"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1283
+msgid "Back to draft"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1284
+msgid "Ready to send"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1285
+msgid "Mark as sent"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1286
+msgid "Supplier confirmed"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1288
+msgid "All received"
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1414
 msgid "Purchase order started. Add what you want to buy."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:1130
+#: src/Admin/PurchaseOrdersScreen.php:1415
 msgid "Purchase order saved."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:1131
+#: src/Admin/PurchaseOrdersScreen.php:1416
 msgid "Purchase order updated."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:1132
+#: src/Admin/PurchaseOrdersScreen.php:1417
 msgid "Draft purchase orders created, one per supplier."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:1134
+#: src/Admin/PurchaseOrdersScreen.php:1418
+msgid "Sent to the supplier, with the PDF attached."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1419
+msgid "Sent again. Both sends are in the history below."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1420
+msgid "The message could not be sent, so nothing has gone to the supplier. Check the site's email settings and the address."
+msgstr ""
+
+#: src/Admin/PurchaseOrdersScreen.php:1422
 msgid "Choose a supplier first."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:1135
+#: src/Admin/PurchaseOrdersScreen.php:1423
 msgid "That order has already gone out, so its lines cannot be changed."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:1136
+#: src/Admin/PurchaseOrdersScreen.php:1424
 msgid "A purchase order cannot go from where it is to there."
 msgstr ""
 
-#: src/Admin/PurchaseOrdersScreen.php:1137
+#: src/Admin/PurchaseOrdersScreen.php:1425
 msgid "That could not be saved. Nothing was changed."
 msgstr ""
 
@@ -760,6 +841,7 @@ msgstr ""
 
 #: src/Admin/SuppliersScreen.php:901
 #: src/Admin/SuppliersScreen.php:1019
+#: src/Pdf/PurchaseOrderDocument.php:190
 msgid "Notes"
 msgstr ""
 
@@ -824,6 +906,7 @@ msgid "The currency this supplier prices in."
 msgstr ""
 
 #: src/Admin/SuppliersScreen.php:1005
+#: src/Pdf/PurchaseOrderDocument.php:188
 msgid "Payment terms"
 msgstr ""
 
@@ -903,4 +986,77 @@ msgstr ""
 
 #: src/Admin/SuppliersScreen.php:1172
 msgid "The supplier could not be saved. Nothing was changed."
+msgstr ""
+
+#: src/Pdf/PurchaseOrderDocument.php:174
+msgid "Purchase order"
+msgstr ""
+
+#: src/Pdf/PurchaseOrderDocument.php:176
+msgid "Date"
+msgstr ""
+
+#: src/Pdf/PurchaseOrderDocument.php:179
+msgid "Deliver to"
+msgstr ""
+
+#: src/Pdf/PurchaseOrderDocument.php:180
+msgid "Code"
+msgstr ""
+
+#: src/Pdf/PurchaseOrderDocument.php:183
+msgid "Unit price"
+msgstr ""
+
+#: src/Pdf/PurchaseOrderDocument.php:185
+msgid "Subtotal"
+msgstr ""
+
+#: src/Pdf/PurchaseOrderDocument.php:186
+msgid "Tax"
+msgstr ""
+
+#: src/Pdf/PurchaseOrderDocument.php:187
+msgid "Order total"
+msgstr ""
+
+#: src/Pdf/PurchaseOrderDocument.php:189
+msgid "Your reference"
+msgstr ""
+
+#: src/Service/PurchaseOrderMailer.php:57
+msgid "That is not an email address."
+msgstr ""
+
+#. translators: %s: email address.
+#: src/Service/PurchaseOrderMailer.php:125
+#, php-format
+msgid "Sent again to %s"
+msgstr ""
+
+#. translators: %s: email address.
+#: src/Service/PurchaseOrderMailer.php:127
+#, php-format
+msgid "Sent to %s"
+msgstr ""
+
+#: src/Service/PurchaseOrderMailer.php:133
+msgid "WordPress could not send the message. Check the site's email settings."
+msgstr ""
+
+#. translators: 1: purchase order number, 2: the shop's name.
+#: src/Support/Settings.php:71
+msgid "Purchase order {number} from {company}"
+msgstr ""
+
+#: src/Support/Settings.php:86
+msgid ""
+"Hello,\n"
+"\n"
+"please find our purchase order {number} attached.\n"
+"\n"
+"We would expect delivery by {expected}.\n"
+"\n"
+"Thank you,\n"
+"{company}"
 msgstr ""
