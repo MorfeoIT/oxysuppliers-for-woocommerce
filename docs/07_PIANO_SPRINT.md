@@ -38,6 +38,22 @@ risponde in un tempo accettabile e il numero di query **non cresce con le
 righe**; i filtri «senza fornitore» e «senza costo» mostrano davvero i casi
 incompleti invece di nasconderli.
 
+**Fatto il 13/08/2026.** Misurato sul banco: **sette query per cinque righe e
+sette per duecento**.
+
+Due cose decise strada facendo, scritte qui perché non si deducono dal codice:
+
+- **la merce in arrivo si sottrae anche nel gratuito**, contro il §6. Non farlo
+  significa suggerire di riordinare merce già in viaggio. Resta PRO la parte
+  difficile, cioè prevedere il consumo durante il lead time;
+- **la scorta minima non è un campo nostro**: è `_low_stock_amount` di
+  WooCommerce, e l'obiettivo è quella soglia per un moltiplicatore
+  configurabile. WooCommerce sa quando avvisarti, non fino a quanto riempire.
+
+E una cosa che il banco ha insegnato: la tabella dei venduti di WooCommerce si
+riempie **in modo asincrono**, quindi può essere vuota mentre gli ordini ci sono.
+La schermata se ne accorge e lo dice, invece di mostrare zeri.
+
 ## Sprint 4 — ordine fornitore
 
 Testata e righe, numerazione unica e filtrabile, macchina a stati (bozza → da

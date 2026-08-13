@@ -48,21 +48,54 @@ hook.
   suggerito.
 - Stati come `enum` (`PurchaseOrderStatus`), mai stringhe sparse nel codice.
 
-## Fabbisogno: un'interfaccia, due implementazioni
+## Dove finisce il gratuito e comincia il Pro, in concreto
+
+`RequirementStrategy` risponde a **una** domanda: quante unità mancano.
+L'arrotondamento ai termini del fornitore e lo stato della riga stanno in
+`RequirementCalculator`, fuori dalla strategia. È questo che rende vera la
+regola 1 di `03_FREE_VS_PRO.md` — il Pro sostituisce un numero, non porta con sé
+una seconda copia delle formule che potrebbe smettere di andare d'accordo con la
+prima.
+
+Il gratuito è `TargetStockStrategy`: `obiettivo − disponibile − in arrivo`.
+
+**Deviazione dichiarata dalla specifica.** Il §6 mette «merce già ordinata e non
+ricevuta» fra le cose PRO. Qui si sottrae anche nel gratuito, perché non farlo
+significa suggerire di riordinare merce già in viaggio: si ordina due volte e si
+paga due volte. Quello che resta davvero PRO è prevedere il **consumo durante il
+lead time**, che è la parte difficile.
+
+**Da dove vengono i numeri.** La scorta minima è `_low_stock_amount` di
+WooCommerce, per articolo, con `woocommerce_notify_low_stock_amount` dietro:
+nessun campo nuovo da riempire. L'obiettivo è quella soglia per un
+moltiplicatore (`requirement_target_multiplier`, 2 di default, più il filtro
+`oxysuppliers_target_multiplier`), perché WooCommerce sa quando avvisarti e non
+fino a quanto riempire.
+
+## Le vendite arrivano tardi, e va detto
+
+I venduti 7/30/90 si leggono da `wc_order_product_lookup`, che è indicizzata per
+questo ed è quella che legge WooCommerce Analytics. Ma **si popola in modo
+asincrono**, con Action Scheduler: su un negozio dove non è mai girata, la
+tabella è vuota mentre gli ordini ci sono tutti.
+
+Una schermata che in quel caso mostra «venduti 0» sta dicendo «non ordinare
+niente». `CatalogueRepository::sales_data_is_stale()` se ne accorge — lookup
+vuota ma ordini presenti — e la schermata lo dice, col link allo strumento di
+importazione di WooCommerce.
 
 ```php
 interface RequirementStrategy {
-    public function suggest( RequirementContext $context ): Quantity;
+    public function needed( RequirementContext $context ): int;
+    public function name(): string;
 }
 ```
 
-Il FREE ne registra una: `TargetStockStrategy` (§6 della specifica,
-`obiettivo − disponibile`, poi minimo/multiplo/confezione). Il PRO ne registra
-un'altra, che considera consumo medio, lead time e merce in arrivo.
-
-La strategia si sceglie con `apply_filters( 'oxysuppliers_requirement_strategy', ... )`.
-**Un solo filtro, un solo vincitore**: è il seme di come il PRO si innesta, e le
-regole per scriverlo bene stanno in `03_FREE_VS_PRO.md`.
+La strategia si sceglie con `apply_filters( 'oxysuppliers_requirement_strategy', ... )`,
+**applicato nella composizione** (`Plugin.php`) e non dentro il motore. Un solo
+filtro, un solo vincitore, e quello che non è una strategia viene scartato
+invece che creduto: un add-on scritto male non deve poter lasciare la schermata
+senza niente a cui chiedere.
 
 ## Il menu: una voce sola, con dei tab
 

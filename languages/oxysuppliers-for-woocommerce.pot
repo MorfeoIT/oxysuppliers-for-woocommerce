@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-13T19:32:34+02:00\n"
+"POT-Creation-Date: 2026-08-13T21:11:17+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: oxysuppliers-for-woocommerce\n"
@@ -53,23 +53,312 @@ msgid "Purchasing"
 msgstr ""
 
 #: src/Admin/Menu.php:117
+#: src/Admin/RequirementsScreen.php:103
 msgid "You are not allowed to see this page."
 msgstr ""
 
+#: src/Admin/ProductSupplierPanel.php:79
+#: src/Admin/ProductSupplierPanel.php:133
 #: src/Admin/SuppliersScreen.php:70
 #: src/Admin/SuppliersScreen.php:170
 msgid "Suppliers"
 msgstr ""
 
+#: src/Admin/ProductSupplierPanel.php:110
+msgid "This product has variations, and each one is bought separately. Set the suppliers on the Variations tab."
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:164
+msgid "No suppliers yet."
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:166
+msgid "Add the first one."
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:185
+#: src/Admin/RequirementsScreen.php:125
+#: src/Admin/RequirementsScreen.php:466
+#: src/Admin/SuppliersScreen.php:201
+msgid "Supplier"
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:186
+msgid "Their code"
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:187
+msgid "Cost"
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:188
+msgid "Minimum"
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:189
+msgid "Multiple"
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:190
+msgid "Per pack"
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:191
+#: src/Admin/SuppliersScreen.php:205
+msgid "Lead time"
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:192
+msgid "Preferred"
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:193
+msgid "Remove"
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:206
+msgid "Fill in the empty line to add a supplier. Quantities are rounded up to satisfy the minimum, the multiple and the pack size together."
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:213
+msgid "No preferred supplier: use the cheapest."
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:238
+#: src/Admin/SuppliersScreen.php:921
+msgid "— Select —"
+msgstr ""
+
+#: src/Admin/ProductSupplierPanel.php:241
+msgid "inactive"
+msgstr ""
+
+#. translators: %s: supplier name.
+#: src/Admin/ProductSupplierPanel.php:406
+#, php-format
+msgid "The line for %s was not saved: check the cost and the quantities."
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:75
+msgid "Reordering"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:112
+msgid "What to reorder"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:121
+#: src/Admin/RequirementsScreen.php:456
+msgid "Article"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:122
+#: src/Admin/RequirementsScreen.php:460
+msgid "Available"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:123
+msgid "Reorder at / up to"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:124
+msgid "Sold 7 / 30 / 90"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:126
+#: src/Admin/RequirementsScreen.php:471
+msgid "To order"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:127
+#: src/Admin/RequirementsScreen.php:473
+#: src/Admin/SuppliersScreen.php:207
+#: src/Admin/SuppliersScreen.php:947
+msgid "Status"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:145
+msgid "Export what is shown (CSV)"
+msgstr ""
+
+#. translators: 1: stock on the shelf, 2: units held for orders being paid for.
+#: src/Admin/RequirementsScreen.php:207
+#, php-format
+msgid "%1$d on the shelf, %2$d held"
+msgstr ""
+
+#. translators: %d: units already ordered from a supplier.
+#: src/Admin/RequirementsScreen.php:221
+#, php-format
+msgid "%d on the way"
+msgstr ""
+
+#. translators: 1: unit cost, 2: lead time in days.
+#: src/Admin/RequirementsScreen.php:245
+#, php-format
+msgid "%1$s each, %2$d days"
+msgstr ""
+
+#. translators: %d: units actually short.
+#: src/Admin/RequirementsScreen.php:268
+#, php-format
+msgid "%d short, rounded up to the supplier terms"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:292
+msgid "Fine"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:293
+msgid "Below reorder point"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:294
+msgid "Out of stock"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:295
+msgid "No supplier"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:296
+msgid "No cost"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:297
+msgid "Not tracked"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:322
+msgid "The sales figures on this page are not complete."
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:323
+msgid "WooCommerce keeps them in a separate table that it fills in the background, and on this shop it is empty while there are orders. Until it has been filled, every article here looks as if it has sold nothing."
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:327
+msgid "See what is queued"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:331
+msgid "Import historical data"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:354
+msgid "Search articles"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:358
+msgid "Name or SKU"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:361
+msgid "Any supplier"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:374
+msgid "Any category"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:384
+msgid "Filter"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:390
+msgid "Only below the reorder point"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:395
+msgid "Only out of stock"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:400
+msgid "Only without a supplier"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:405
+msgid "Only without a cost"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:428
+msgid "Nothing matches those filters."
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:433
+msgid "No article has stock management switched on, so there is nothing to reorder yet."
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:445
+msgid "You are not allowed to export this."
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:455
+msgid "SKU"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:457
+msgid "Stock"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:458
+msgid "Reserved"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:459
+msgid "On the way"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:461
+msgid "Reorder point"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:462
+msgid "Target"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:463
+msgid "Sold 7"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:464
+msgid "Sold 30"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:465
+msgid "Sold 90"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:467
+msgid "Supplier code"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:468
+msgid "Unit cost"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:469
+#: src/Admin/SuppliersScreen.php:999
+msgid "Currency"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:470
+msgid "Short"
+msgstr ""
+
+#: src/Admin/RequirementsScreen.php:472
+msgid "Order value"
+msgstr ""
+
 #: src/Admin/SuppliersScreen.php:100
-#: src/Admin/SuppliersScreen.php:622
-#: src/Admin/SuppliersScreen.php:721
-#: src/Admin/SuppliersScreen.php:757
+#: src/Admin/SuppliersScreen.php:632
+#: src/Admin/SuppliersScreen.php:731
+#: src/Admin/SuppliersScreen.php:767
 msgid "You are not allowed to manage suppliers."
 msgstr ""
 
 #: src/Admin/SuppliersScreen.php:172
-#: src/Admin/SuppliersScreen.php:406
+#: src/Admin/SuppliersScreen.php:416
 msgid "Add supplier"
 msgstr ""
 
@@ -82,14 +371,14 @@ msgid "All statuses"
 msgstr ""
 
 #: src/Admin/SuppliersScreen.php:187
-#: src/Admin/SuppliersScreen.php:267
-#: src/Admin/SuppliersScreen.php:940
+#: src/Admin/SuppliersScreen.php:277
+#: src/Admin/SuppliersScreen.php:950
 msgid "Active"
 msgstr ""
 
 #: src/Admin/SuppliersScreen.php:190
-#: src/Admin/SuppliersScreen.php:269
-#: src/Admin/SuppliersScreen.php:941
+#: src/Admin/SuppliersScreen.php:279
+#: src/Admin/SuppliersScreen.php:951
 msgid "Inactive"
 msgstr ""
 
@@ -97,280 +386,263 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:201
-msgid "Supplier"
-msgstr ""
-
 #: src/Admin/SuppliersScreen.php:202
-#: src/Admin/SuppliersScreen.php:929
+#: src/Admin/SuppliersScreen.php:939
 msgid "VAT number"
 msgstr ""
 
 #: src/Admin/SuppliersScreen.php:203
-#: src/Admin/SuppliersScreen.php:954
+#: src/Admin/SuppliersScreen.php:964
 msgid "City"
 msgstr ""
 
 #: src/Admin/SuppliersScreen.php:204
-#: src/Admin/SuppliersScreen.php:962
+#: src/Admin/SuppliersScreen.php:972
 msgid "Country"
-msgstr ""
-
-#: src/Admin/SuppliersScreen.php:205
-msgid "Lead time"
 msgstr ""
 
 #: src/Admin/SuppliersScreen.php:206
 msgid "Minimum order"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:207
-#: src/Admin/SuppliersScreen.php:937
-msgid "Status"
+#: src/Admin/SuppliersScreen.php:220
+msgid "No supplier matches that search."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:214
+#: src/Admin/SuppliersScreen.php:222
 msgid "No suppliers yet. Add the first one to start buying."
 msgstr ""
 
 #. translators: %d: number of days.
-#: src/Admin/SuppliersScreen.php:252
+#: src/Admin/SuppliersScreen.php:262
 #, php-format
 msgid "%d day"
 msgid_plural "%d days"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/SuppliersScreen.php:308
+#: src/Admin/SuppliersScreen.php:318
 msgid "Deactivate"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:309
+#: src/Admin/SuppliersScreen.php:319
 msgid "Activate"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:327
+#: src/Admin/SuppliersScreen.php:337
 msgid "Edit"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:351
+#: src/Admin/SuppliersScreen.php:361
 msgid "Delete"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:407
+#: src/Admin/SuppliersScreen.php:417
 msgid "Edit supplier"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:415
+#: src/Admin/SuppliersScreen.php:425
 msgid "The supplier was not saved. Please correct the fields marked below."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:455
+#: src/Admin/SuppliersScreen.php:465
 msgid "Save supplier"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:457
-#: src/Admin/SuppliersScreen.php:589
+#: src/Admin/SuppliersScreen.php:467
+#: src/Admin/SuppliersScreen.php:599
 msgid "Cancel"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:538
-#: src/Admin/SuppliersScreen.php:587
+#: src/Admin/SuppliersScreen.php:548
+#: src/Admin/SuppliersScreen.php:597
 msgid "Delete supplier"
 msgstr ""
 
 #. translators: %1$s: supplier name, %2$d: number of purchase orders.
-#: src/Admin/SuppliersScreen.php:547
+#: src/Admin/SuppliersScreen.php:557
 #, php-format
 msgid "%1$s cannot be deleted: %2$d purchase order names them. Deactivate them instead."
 msgid_plural "%1$s cannot be deleted: %2$d purchase orders name them. Deactivate them instead."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/SuppliersScreen.php:562
-#: src/Admin/SuppliersScreen.php:607
+#: src/Admin/SuppliersScreen.php:572
+#: src/Admin/SuppliersScreen.php:617
 msgid "Back to suppliers"
 msgstr ""
 
 #. translators: %s: supplier name.
-#: src/Admin/SuppliersScreen.php:575
+#: src/Admin/SuppliersScreen.php:585
 #, php-format
 msgid "Delete %s and their price list? This cannot be undone."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:603
-#: src/Admin/SuppliersScreen.php:1160
+#: src/Admin/SuppliersScreen.php:613
+#: src/Admin/SuppliersScreen.php:1170
 msgid "That supplier no longer exists."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:887
+#: src/Admin/SuppliersScreen.php:897
 msgid "Identity"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:888
-#: src/Admin/SuppliersScreen.php:946
+#: src/Admin/SuppliersScreen.php:898
+#: src/Admin/SuppliersScreen.php:956
 msgid "Address"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:889
+#: src/Admin/SuppliersScreen.php:899
 msgid "Contacts"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:890
+#: src/Admin/SuppliersScreen.php:900
 msgid "Buying terms"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:891
-#: src/Admin/SuppliersScreen.php:1009
+#: src/Admin/SuppliersScreen.php:901
+#: src/Admin/SuppliersScreen.php:1019
 msgid "Notes"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:911
-msgid "— Select —"
-msgstr ""
-
-#: src/Admin/SuppliersScreen.php:919
+#: src/Admin/SuppliersScreen.php:929
 msgid "Company name"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:924
+#: src/Admin/SuppliersScreen.php:934
 msgid "Trading name"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:926
+#: src/Admin/SuppliersScreen.php:936
 msgid "Shown in lists when it is filled in."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:933
+#: src/Admin/SuppliersScreen.php:943
 msgid "Tax code"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:943
+#: src/Admin/SuppliersScreen.php:953
 msgid "An inactive supplier stays on past orders but is not offered on new ones."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:950
+#: src/Admin/SuppliersScreen.php:960
 msgid "Postcode"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:958
+#: src/Admin/SuppliersScreen.php:968
 msgid "Province or state"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:967
+#: src/Admin/SuppliersScreen.php:977
 msgid "Contact"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:971
+#: src/Admin/SuppliersScreen.php:981
 msgid "Orders email"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:973
+#: src/Admin/SuppliersScreen.php:983
 msgid "Where purchase orders are sent."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:976
+#: src/Admin/SuppliersScreen.php:986
 msgid "Accounts email"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:980
+#: src/Admin/SuppliersScreen.php:990
 msgid "Phone"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:984
+#: src/Admin/SuppliersScreen.php:994
 msgid "Website"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:986
+#: src/Admin/SuppliersScreen.php:996
 msgid "Starting with http:// or https://."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:989
-msgid "Currency"
-msgstr ""
-
-#: src/Admin/SuppliersScreen.php:992
+#: src/Admin/SuppliersScreen.php:1002
 msgid "The currency this supplier prices in."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:995
+#: src/Admin/SuppliersScreen.php:1005
 msgid "Payment terms"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:999
+#: src/Admin/SuppliersScreen.php:1009
 msgid "Lead time (days)"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1001
+#: src/Admin/SuppliersScreen.php:1011
 msgid "Usual number of days between ordering and delivery."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1004
+#: src/Admin/SuppliersScreen.php:1014
 msgid "Minimum order value"
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1006
+#: src/Admin/SuppliersScreen.php:1016
 msgid "Leave empty when there is no minimum."
 msgstr ""
 
 #. translators: %s: field label.
-#: src/Admin/SuppliersScreen.php:1031
+#: src/Admin/SuppliersScreen.php:1041
 #, php-format
 msgid "%s is required."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1034
+#: src/Admin/SuppliersScreen.php:1044
 msgid "This is longer than the field can hold."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1037
+#: src/Admin/SuppliersScreen.php:1047
 msgid "This does not look like an email address."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1040
+#: src/Admin/SuppliersScreen.php:1050
 msgid "This must be a web address starting with http:// or https://."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1043
+#: src/Admin/SuppliersScreen.php:1053
 msgid "Please choose a country from the list."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1046
+#: src/Admin/SuppliersScreen.php:1056
 msgid "Please choose a currency from the list."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1049
+#: src/Admin/SuppliersScreen.php:1059
 msgid "Please enter a number."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1052
+#: src/Admin/SuppliersScreen.php:1062
 msgid "This value cannot be used."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1155
+#: src/Admin/SuppliersScreen.php:1165
 msgid "Supplier added."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1156
+#: src/Admin/SuppliersScreen.php:1166
 msgid "Supplier saved."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1157
+#: src/Admin/SuppliersScreen.php:1167
 msgid "Supplier deleted."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1158
+#: src/Admin/SuppliersScreen.php:1168
 msgid "Supplier activated."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1159
+#: src/Admin/SuppliersScreen.php:1169
 msgid "Supplier deactivated."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1161
+#: src/Admin/SuppliersScreen.php:1171
 msgid "That supplier is named on purchase orders and cannot be deleted. Deactivate them instead."
 msgstr ""
 
-#: src/Admin/SuppliersScreen.php:1162
+#: src/Admin/SuppliersScreen.php:1172
 msgid "The supplier could not be saved. Nothing was changed."
 msgstr ""

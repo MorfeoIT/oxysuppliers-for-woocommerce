@@ -5,6 +5,34 @@ oxywp.com is generated from `readme.txt`, which follows this file.
 
 ## [Unreleased]
 
+### Sprint 3 — the reordering screen (13/08/2026)
+
+- **What to reorder**, the screen the plugin exists for: stock, what is held for
+  orders being paid for, what is on its way, the reorder point, sales over 7, 30
+  and 90 days, the supplier to buy from, and how many to order.
+- The reorder point is WooCommerce's own low stock threshold, per article, with
+  the shop's default behind it. Nothing new to fill in. How full to fill back up
+  is a multiple of it, `requirement_target_multiplier`, two by default.
+- **Goods already on order are subtracted**, which the specification puts in the
+  paid add-on. Not subtracting them means telling somebody to reorder what is
+  already in a van, so they order twice and pay twice. What stays paid-for is the
+  hard part: predicting what will sell during the lead time.
+- Filters for the two ways the screen can fail to answer — an article nobody
+  sells, and a supplier with no price. Both are shown rather than hidden.
+- **A warning when the sales figures cannot be believed.** WooCommerce fills its
+  sales lookup table in the background; until that has run, every article looks
+  as if it has sold nothing, and a reordering screen that stays quiet about it is
+  telling the shop not to buy anything.
+- CSV export of whatever the filters are showing, proof against a spreadsheet
+  reading a supplier name as a formula.
+- `oxysuppliers_requirement_strategy` — the seam the paid add-on replaces. It
+  answers one question, how many units are missing; the rounding to the
+  supplier's terms and the state of the row stay here, so there is only ever one
+  copy of them.
+- **The number of queries does not grow with the number of rows**: measured on
+  the bench at seven queries for five rows and seven for two hundred.
+- 65 unit tests, and 18 checks against the seeded shop.
+
 ### Sprint 2 — product to supplier (13/08/2026)
 
 - Price lists: each product or variation can be linked to any number of
