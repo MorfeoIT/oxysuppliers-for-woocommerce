@@ -53,23 +53,28 @@ $activate = if ($SkipActivate) { 'true' } else { "wp plugin activate $slug >/dev
 scp -i $KeyPath (Join-Path $repo 'composer.json') "root@${Server}:/tmp/$slug-composer.json"
 scp -i $KeyPath (Join-Path $repo 'composer.lock') "root@${Server}:/tmp/$slug-composer.lock"
 
+# No shell variables in this here-string: PowerShell expands with $ and escapes
+# with a backtick, so a shell $VAR either vanishes or comes out mangled. Every
+# path is interpolated on this side instead.
+$pluginPath = "$SitePath/wp-content/plugins/$slug"
+
 $remote = @"
 set -e
-PLUGIN=$SitePath/wp-content/plugins/$slug
-rm -rf \$PLUGIN
+rm -rf $pluginPath
 tar -xf /tmp/$slug.tar -C $SitePath/wp-content/plugins/
 
-# The runtime dependency (Dompdf) is installed here rather than shipped in the
+# The runtime dependency (Dompdf) is installed here rather than kept in the
 # repository: what git holds is the plugin's own code.
-cp /tmp/$slug-composer.json \$PLUGIN/composer.json
-cp /tmp/$slug-composer.lock \$PLUGIN/composer.lock
-cd \$PLUGIN
+cp /tmp/$slug-composer.json $pluginPath/composer.json
+cp /tmp/$slug-composer.lock $pluginPath/composer.lock
+cd $pluginPath
 composer install --no-dev --classmap-authoritative --no-interaction --quiet
-rm -f \$PLUGIN/composer.json \$PLUGIN/composer.lock
+rm -f $pluginPath/composer.json $pluginPath/composer.lock
 
-chown -R webtest:webtest \$PLUGIN
+chown -R webtest:webtest $pluginPath
 sudo -u webtest -H bash -c "cd $SitePath && $activate"
 sudo -u webtest -H bash -c "cd $SitePath && wp plugin list --format=csv --fields=name,status,version"
+du -sh $pluginPath
 "@
 
 # Written to a file and copied rather than piped into ssh: PowerShell encodes a
