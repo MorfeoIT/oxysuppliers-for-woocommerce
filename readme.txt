@@ -115,4 +115,21 @@ Nothing is written until you say so.
 == Changelog ==
 
 = 0.1.0 =
-* Not released yet. In development.
+* First public release.
+* Suppliers, with addresses, contacts, payment terms, lead times and minimum order values.
+* A price list per product and per variation: several suppliers, each with their own code, cost and terms, and one of them preferred.
+* Minimum order quantity, order multiple and pack size applied together, so a suggested quantity is one the supplier will actually accept.
+* One reordering screen: what is below its reorder point, who supplies it, what it costs, how many to buy — the same seven queries whether it shows five rows or two hundred.
+* Goods already ordered and not yet arrived subtracted from what needs buying, and shown on the product screen with the date to expect them.
+* Purchase orders by hand, or built from the reordering screen and grouped by supplier.
+* A PDF document for each order, and an email you send from the screen, with the sending recorded.
+* Goods receipts, whole or partial, as many times as the deliveries arrive — defended four times over, so the same form sent twice moves the stock once.
+* A delivery entered by mistake is undone by an opposite entry, never by deleting one: both stay, and the stock goes back.
+* What was really paid recorded on every delivery, in a record nothing ever rewrites.
+* Four reports: money committed, open orders, articles below their reorder point, and orders that are late.
+* Price list import from a CSV file, with a preview before anything is written: byte order marks, semicolons and comma decimals all read.
+* A read-only REST API under oxysuppliers/v1, each route with its own permission check.
+* An audit trail of every order, every delivery and every stock movement, with the value before and after.
+* Compatible with WooCommerce high performance order storage; the plugin never touches its order tables.
+* Nothing is deleted on deactivation, and nothing on uninstall unless you switch it on first.
+* No telemetry: the plugin contacts no server of ours, ever.
