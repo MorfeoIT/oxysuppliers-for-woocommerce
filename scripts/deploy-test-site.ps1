@@ -1,0 +1,72 @@
+<#
+.SYNOPSIS
+    Puts the current commit on the test bench.
+
+.DESCRIPTION
+    Builds the package with `git archive`, which honours the export-ignore rules
+    in .gitattributes, so what lands on the bench is exactly what would be
+    distributed: no tests, no documents, no Composer files. Testing something
+    else is testing the wrong thing.
+
+    The bench is https://test.44123.it/oxysuppliers on the Hestia server
+    ph.oxysoft.it. See docs/06_PIANO_TEST.md.
+#>
+
+[CmdletBinding()]
+param(
+    [string] $Server = 'ph.oxysoft.it',
+    [string] $KeyPath = "$env:USERPROFILE\.ssh\oxy_cluster",
+    [string] $SitePath = '/home/webtest/web/test.44123.it/public_html/oxysuppliers',
+    [switch] $SkipActivate
+)
+
+$ErrorActionPreference = 'Stop'
+
+$repo = Split-Path -Parent $PSScriptRoot
+$slug = 'oxysuppliers-for-woocommerce'
+$tar  = Join-Path $env:TEMP "$slug.tar"
+
+Push-Location $repo
+try {
+    Write-Host 'Costruisco il pacchetto con git archive...'
+    git archive --format=tar --prefix="$slug/" HEAD -o $tar
+    if ($LASTEXITCODE -ne 0) { throw 'git archive fallito' }
+}
+finally {
+    Pop-Location
+}
+
+Write-Host 'Carico...'
+scp -i $KeyPath $tar "root@${Server}:/tmp/$slug.tar"
+if ($LASTEXITCODE -ne 0) { throw 'scp fallito' }
+
+$activate = if ($SkipActivate) { 'true' } else { "wp plugin activate $slug" }
+
+$remote = @"
+set -e
+rm -rf $SitePath/wp-content/plugins/$slug
+tar -xf /tmp/$slug.tar -C $SitePath/wp-content/plugins/
+chown -R webtest:webtest $SitePath/wp-content/plugins/$slug
+sudo -u webtest -H bash -c "cd $SitePath && $activate"
+sudo -u webtest -H bash -c "cd $SitePath && wp plugin list --format=csv --fields=name,status,version"
+"@
+
+# Written to a file and copied rather than piped into ssh: PowerShell encodes a
+# pipeline to a native command with a byte order mark, and bash reads that mark
+# as part of the first command. The failure reads "set: command not found",
+# which points nowhere near the cause.
+$remoteScript = Join-Path $env:TEMP "$slug-deploy.sh"
+[System.IO.File]::WriteAllText(
+    $remoteScript,
+    ($remote -replace "`r`n", "`n"),
+    (New-Object System.Text.UTF8Encoding $false)
+)
+
+scp -i $KeyPath $remoteScript "root@${Server}:/tmp/$slug-deploy.sh"
+if ($LASTEXITCODE -ne 0) { throw 'scp dello script fallito' }
+
+ssh -i $KeyPath "root@$Server" "bash /tmp/$slug-deploy.sh"
+if ($LASTEXITCODE -ne 0) { throw 'deploy remoto fallito' }
+
+Remove-Item $tar, $remoteScript -Force
+Write-Host 'Fatto: https://test.44123.it/oxysuppliers/wp-admin/'

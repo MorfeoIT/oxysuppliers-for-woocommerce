@@ -489,8 +489,11 @@ final class SuppliersScreen implements Screen {
 				$options = (array) ( $field['options'] ?? array() );
 
 				foreach ( $options as $option_value => $label ) {
+					// No space before the second placeholder: selected() already
+					// brings its own, and two of them is a double space in the
+					// markup.
 					printf(
-						'<option value="%1$s" %2$s>%3$s</option>',
+						'<option value="%1$s"%2$s>%3$s</option>',
 						esc_attr( (string) $option_value ),
 						selected( (string) $option_value, $value, false ),
 						esc_html( (string) $label )
