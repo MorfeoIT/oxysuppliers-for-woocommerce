@@ -393,6 +393,30 @@ final class GoodsReceiverTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The receipt handed back knows whether the stock moved.
+	 *
+	 * It cannot know from the object built a moment earlier — the movement
+	 * happens afterwards — and a correction that believes that stale copy puts
+	 * nothing back, leaving the shelf saying more than there is.
+	 *
+	 * There is no WooCommerce here, so nothing moves; what this pins down is
+	 * that the answer comes from the database rather than from a copy.
+	 *
+	 * @return void
+	 */
+	public function test_the_receipt_handed_back_is_read_from_the_database(): void {
+		$order = $this->sent_order();
+
+		$outcome = $this->receiver->receive( $order, array( $order->lines[0]->id => 5 ), array(), 'riletta' );
+
+		$this->assertNotNull( $outcome->receipt );
+		$this->assertSame(
+			$this->receipts->find( $outcome->receipt->id )->stock_applied,
+			$outcome->receipt->stock_applied
+		);
+	}
+
+	/**
 	 * Correcting a correction is refused: the answer is to receive again.
 	 *
 	 * @return void

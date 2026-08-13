@@ -199,6 +199,11 @@ final class GoodsReceiver {
 
 		$this->apply_stock( $receipt );
 
+		// Read back, so that what the caller is handed says whether the stock
+		// moved. The object built a moment ago cannot know: the movement
+		// happened after it was made.
+		$receipt = $this->receipts->find( $receipt_id ) ?? $receipt;
+
 		$this->audit->log(
 			AuditLogger::OBJECT_RECEIPT,
 			(string) $receipt_id,
@@ -313,8 +318,13 @@ final class GoodsReceiver {
 			return new ReceiptOutcome( ReceiptOutcome::FAILED );
 		}
 
-		// Only put the stock back if it was taken in the first place.
-		if ( $receipt->stock_applied ) {
+		// Only put the stock back if it was moved in the first place — and ask
+		// the database, not the object the caller has been holding. That copy
+		// was very likely read before the movement happened, and believing it
+		// leaves the shelf saying more than there is.
+		$original = $this->receipts->find( $receipt->id ) ?? $receipt;
+
+		if ( $original->stock_applied ) {
 			$this->apply_stock( $stored );
 		}
 
