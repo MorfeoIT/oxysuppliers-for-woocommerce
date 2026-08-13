@@ -62,7 +62,7 @@ final class SupplierRepository {
 		$data['updated_at'] = $now;
 		$data['created_by'] = get_current_user_id();
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table, no WordPress API for it.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table, no WordPress API for it.
 		$written = $wpdb->insert( Tables::name( Tables::SUPPLIERS ), $data );
 
 		return false === $written ? 0 : (int) $wpdb->insert_id;
@@ -84,7 +84,7 @@ final class SupplierRepository {
 		$data               = $this->to_columns( $supplier );
 		$data['updated_at'] = current_time( 'mysql', true );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table, no WordPress API for it.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table, no WordPress API for it.
 		$written = $wpdb->update(
 			Tables::name( Tables::SUPPLIERS ),
 			$data,
@@ -107,7 +107,7 @@ final class SupplierRepository {
 
 		$table = Tables::name( Tables::SUPPLIERS );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table, table name from a constant, all values bound through prepare().
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table, table name from a constant, all values bound through prepare().
 		$row = $wpdb->get_row(
 			$wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $id ),
 			ARRAY_A
@@ -138,7 +138,7 @@ final class SupplierRepository {
 		$parameters[] = $per_page;
 		$parameters[] = ( $page - 1 ) * $per_page;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table; table, sort column and direction come from constants and allowlists, every value is bound.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table; table, sort column and direction come from constants and allowlists, every value is bound.
 		$rows = $wpdb->get_results( $wpdb->prepare( $sql, $parameters ), ARRAY_A );
 
 		if ( ! is_array( $rows ) ) {
@@ -162,11 +162,11 @@ final class SupplierRepository {
 		$sql   = "SELECT COUNT(*) FROM {$table} {$where['sql']}";
 
 		if ( array() === $where['values'] ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table; the whole statement is built from a constant and holds no value at all.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table; the whole statement is built from a constant and holds no value at all.
 			return (int) $wpdb->get_var( $sql );
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table, table name from a constant, all values bound through prepare().
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table, table name from a constant, all values bound through prepare().
 		return (int) $wpdb->get_var( $wpdb->prepare( $sql, $where['values'] ) );
 	}
 
@@ -181,7 +181,7 @@ final class SupplierRepository {
 
 		$table = Tables::name( Tables::PURCHASE_ORDERS );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table, table name from a constant, all values bound through prepare().
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table, table name from a constant, all values bound through prepare().
 		$total = $wpdb->get_var(
 			$wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE supplier_id = %d", $id )
 		);
@@ -218,10 +218,10 @@ final class SupplierRepository {
 		// Price list lines are not history: they describe an offer, not a
 		// document, and there is nothing left to read them once the supplier is
 		// gone.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table, no WordPress API for it.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table, no WordPress API for it.
 		$wpdb->delete( Tables::name( Tables::SUPPLIER_PRODUCTS ), array( 'supplier_id' => $id ), array( '%d' ) );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table, no WordPress API for it.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table, no WordPress API for it.
 		$removed = $wpdb->delete( Tables::name( Tables::SUPPLIERS ), array( 'id' => $id ), array( '%d' ) );
 
 		return false !== $removed && $removed > 0;

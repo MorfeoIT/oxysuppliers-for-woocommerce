@@ -40,7 +40,9 @@ Write-Host 'Carico...'
 scp -i $KeyPath $tar "root@${Server}:/tmp/$slug.tar"
 if ($LASTEXITCODE -ne 0) { throw 'scp fallito' }
 
-$activate = if ($SkipActivate) { 'true' } else { "wp plugin activate $slug" }
+# A plugin that is already active makes WP-CLI warn and return non-zero, which
+# is not a failed deploy.
+$activate = if ($SkipActivate) { 'true' } else { "wp plugin activate $slug || true" }
 
 $remote = @"
 set -e

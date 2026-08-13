@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "486eac9ac805c65934928442216292ee",
+    "content-hash": "1183fe43a0d747ad56bec58f412b0dca",
     "packages": [],
     "packages-dev": [
         {
@@ -1159,7 +1159,7 @@
         },
         {
             "name": "roots/wordpress",
-            "version": "6.9.7",
+            "version": "7.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/roots/wordpress.git",
@@ -1269,23 +1269,23 @@
         },
         {
             "name": "roots/wordpress-no-content",
-            "version": "6.9.7",
+            "version": "7.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/WordPress/WordPress.git",
-                "reference": "6.9.7"
+                "reference": "7.0.4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.w.org/release/wordpress-6.9.7-no-content.zip",
-                "reference": "6.9.7",
-                "shasum": "32c7a1121934995d9399d78d6d7f848468a6318a"
+                "url": "https://downloads.w.org/release/wordpress-7.0.4-no-content.zip",
+                "reference": "7.0.4",
+                "shasum": "c43ba63174abfef77d00fbc6041db0d801869e09"
             },
             "require": {
-                "php": ">= 7.2.24"
+                "php": ">= 7.4"
             },
             "provide": {
-                "wordpress/core-implementation": "6.9.7"
+                "wordpress/core-implementation": "7.0.4"
             },
             "suggest": {
                 "ext-curl": "Performs remote request operations.",
@@ -1336,7 +1336,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-08-12T14:47:32+00:00"
+            "time": "2026-08-12T14:47:33+00:00"
         },
         {
             "name": "sebastian/cli-parser",

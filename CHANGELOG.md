@@ -22,4 +22,6 @@ oxywp.com is generated from `readme.txt`, which follows this file.
 - 29 unit tests and 23 checks inside a real WordPress (schema, capabilities,
   storage), PHPCS clean, PHPStan at level 8 clean, CI on GitHub Actions
   including a job that builds the package and inspects it.
-- Tested against WordPress 6.9.7, which is what the integration suite runs on.
+- Tested against WordPress 7.0 and WooCommerce 11: the integration suite runs on
+  it in CI, and the test bench at test.44123.it/oxysuppliers runs 7.0.4 with
+  HPOS on, where 41 checks drive the admin screens over HTTP.
