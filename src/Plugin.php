@@ -22,11 +22,13 @@ use Oxysoft\OxySuppliers\Engine\TargetStockStrategy;
 use Oxysoft\OxySuppliers\Persistence\CatalogueRepository;
 use Oxysoft\OxySuppliers\Persistence\Migrator;
 use Oxysoft\OxySuppliers\Persistence\PurchaseOrderRepository;
+use Oxysoft\OxySuppliers\Persistence\ReceiptRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierProductRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierRepository;
 use Oxysoft\OxySuppliers\Pdf\PdfRenderer;
 use Oxysoft\OxySuppliers\Pdf\PurchaseOrderDocument;
 use Oxysoft\OxySuppliers\Service\AuditLogger;
+use Oxysoft\OxySuppliers\Service\GoodsReceiver;
 use Oxysoft\OxySuppliers\Service\ProposalBuilder;
 use Oxysoft\OxySuppliers\Service\PurchaseOrderMailer;
 use Oxysoft\OxySuppliers\Service\PurchaseOrderNumbers;
@@ -78,6 +80,7 @@ final class Plugin {
 
 			$document = new PurchaseOrderDocument();
 			$renderer = new PdfRenderer();
+			$receipts = new ReceiptRepository();
 
 			$menu->add_tab(
 				new PurchaseOrdersScreen(
@@ -87,7 +90,9 @@ final class Plugin {
 					$audit,
 					$document,
 					$renderer,
-					new PurchaseOrderMailer( $document, $renderer, $audit )
+					new PurchaseOrderMailer( $document, $renderer, $audit ),
+					$receipts,
+					new GoodsReceiver( $receipts, $orders, $audit )
 				)
 			);
 			$menu->add_tab( new SuppliersScreen( $suppliers, new SupplierValidator(), $audit ) );

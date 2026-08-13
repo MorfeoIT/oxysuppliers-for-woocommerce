@@ -16,12 +16,15 @@ use Oxysoft\OxySuppliers\Domain\PurchaseOrder;
 use Oxysoft\OxySuppliers\Domain\PurchaseOrderLine;
 use Oxysoft\OxySuppliers\Domain\PurchaseOrderStatus;
 use Oxysoft\OxySuppliers\Persistence\PurchaseOrderRepository;
+use Oxysoft\OxySuppliers\Persistence\ReceiptRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierProductRepository;
 use Oxysoft\OxySuppliers\Persistence\SupplierRepository;
 use Oxysoft\OxySuppliers\Pdf\PdfRenderer;
 use Oxysoft\OxySuppliers\Pdf\PurchaseOrderDocument;
 use Oxysoft\OxySuppliers\Service\AuditLogger;
+use Oxysoft\OxySuppliers\Service\GoodsReceiver;
 use Oxysoft\OxySuppliers\Service\PurchaseOrderMailer;
+use Oxysoft\OxySuppliers\Service\ReceiptOutcome;
 use Oxysoft\OxySuppliers\Support\Capabilities;
 use Oxysoft\OxySuppliers\Support\Settings;
 
@@ -37,11 +40,13 @@ final class PurchaseOrdersScreen implements Screen {
 
 	public const SLUG = 'orders';
 
-	public const CREATE_ACTION = 'oxysuppliers_create_order';
-	public const SAVE_ACTION   = 'oxysuppliers_save_order';
-	public const STATUS_ACTION = 'oxysuppliers_order_status';
-	public const PDF_ACTION    = 'oxysuppliers_order_pdf';
-	public const SEND_ACTION   = 'oxysuppliers_send_order';
+	public const CREATE_ACTION  = 'oxysuppliers_create_order';
+	public const SAVE_ACTION    = 'oxysuppliers_save_order';
+	public const STATUS_ACTION  = 'oxysuppliers_order_status';
+	public const PDF_ACTION     = 'oxysuppliers_order_pdf';
+	public const SEND_ACTION    = 'oxysuppliers_send_order';
+	public const RECEIVE_ACTION = 'oxysuppliers_receive_order';
+	public const REVERSE_ACTION = 'oxysuppliers_reverse_receipt';
 
 	/**
 	 * How many orders a page holds.
@@ -65,6 +70,8 @@ final class PurchaseOrdersScreen implements Screen {
 	 * @param PurchaseOrderDocument     $document  Builds the document.
 	 * @param PdfRenderer               $renderer  Turns it into a PDF.
 	 * @param PurchaseOrderMailer       $mailer    Sends it.
+	 * @param ReceiptRepository         $receipts  Storage for receipts.
+	 * @param GoodsReceiver             $receiver  Records what arrives.
 	 */
 	public function __construct(
 		private readonly PurchaseOrderRepository $orders,
@@ -73,7 +80,9 @@ final class PurchaseOrdersScreen implements Screen {
 		private readonly AuditLogger $audit,
 		private readonly PurchaseOrderDocument $document,
 		private readonly PdfRenderer $renderer,
-		private readonly PurchaseOrderMailer $mailer
+		private readonly PurchaseOrderMailer $mailer,
+		private readonly ReceiptRepository $receipts,
+		private readonly GoodsReceiver $receiver
 	) {
 	}
 
@@ -115,6 +124,8 @@ final class PurchaseOrdersScreen implements Screen {
 		add_action( 'admin_post_' . self::STATUS_ACTION, array( $this, 'handle_status' ) );
 		add_action( 'admin_post_' . self::PDF_ACTION, array( $this, 'handle_pdf' ) );
 		add_action( 'admin_post_' . self::SEND_ACTION, array( $this, 'handle_send' ) );
+		add_action( 'admin_post_' . self::RECEIVE_ACTION, array( $this, 'handle_receive' ) );
+		add_action( 'admin_post_' . self::REVERSE_ACTION, array( $this, 'handle_reverse' ) );
 	}
 
 	/**
@@ -419,6 +430,7 @@ final class PurchaseOrdersScreen implements Screen {
 		</p>
 
 		<?php $this->render_status_actions( $order ); ?>
+		<?php $this->render_receiving( $order ); ?>
 		<?php $this->render_send_box( $order ); ?>
 
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -627,6 +639,301 @@ final class PurchaseOrdersScreen implements Screen {
 		}
 
 		echo '</p>';
+	}
+
+	/**
+	 * Receiving what has arrived, and what has arrived already.
+	 *
+	 * @param PurchaseOrder $order The order.
+	 * @return void
+	 */
+	private function render_receiving( PurchaseOrder $order ): void {
+		if ( array() === $order->lines ) {
+			return;
+		}
+
+		$this->render_receipts( $order );
+
+		if ( ! current_user_can( Capabilities::RECEIVE_ORDERS ) ) {
+			return;
+		}
+
+		// A draft has not been ordered yet, and a cancelled order is not coming.
+		if ( ! $order->status->is_expected() && ! $order->status->is_editable() ) {
+			return;
+		}
+
+		if ( 0 === $order->outstanding() ) {
+			return;
+		}
+
+		?>
+		<h2><?php esc_html_e( 'Receive what has arrived', 'oxysuppliers-for-woocommerce' ); ?></h2>
+
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<input type="hidden" name="action" value="<?php echo esc_attr( self::RECEIVE_ACTION ); ?>">
+			<input type="hidden" name="id" value="<?php echo esc_attr( (string) $order->id ); ?>">
+
+			<?php
+			/*
+			 * The key that makes this happen once. Generated **here**, while the
+			 * form is being drawn, so that pressing the button twice, reloading,
+			 * going back, or a browser retrying a timed-out request all carry
+			 * the same one — and the database refuses the second.
+			 */
+			?>
+			<input type="hidden" name="idempotency_key" value="<?php echo esc_attr( wp_generate_uuid4() ); ?>">
+			<?php wp_nonce_field( self::RECEIVE_ACTION . '_' . $order->id ); ?>
+
+			<table class="wp-list-table widefat fixed striped">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Article', 'oxysuppliers-for-woocommerce' ); ?></th>
+						<th><?php esc_html_e( 'Ordered', 'oxysuppliers-for-woocommerce' ); ?></th>
+						<th><?php esc_html_e( 'Already in', 'oxysuppliers-for-woocommerce' ); ?></th>
+						<th><?php esc_html_e( 'Outstanding', 'oxysuppliers-for-woocommerce' ); ?></th>
+						<th><?php esc_html_e( 'Arriving now', 'oxysuppliers-for-woocommerce' ); ?></th>
+						<th><?php esc_html_e( 'Price actually charged', 'oxysuppliers-for-woocommerce' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+				<?php foreach ( $order->lines as $line ) : ?>
+					<tr>
+						<td>
+							<strong><?php echo esc_html( '' !== $line->description ? $line->description : $line->sku ); ?></strong>
+							<div class="description"><?php echo esc_html( $line->supplier_sku ); ?></div>
+						</td>
+						<td><?php echo esc_html( (string) $line->qty_ordered ); ?></td>
+						<td><?php echo esc_html( (string) $line->qty_received ); ?></td>
+						<td><strong><?php echo esc_html( (string) $line->outstanding() ); ?></strong></td>
+						<td>
+							<input type="number" min="0" max="<?php echo esc_attr( (string) $line->outstanding() ); ?>" step="1" size="5"
+								name="received[<?php echo esc_attr( (string) $line->id ); ?>]" value="">
+						</td>
+						<td>
+							<input type="text" size="8"
+								name="cost[<?php echo esc_attr( (string) $line->id ); ?>]"
+								placeholder="<?php echo esc_attr( $line->unit_cost->to_decimal() ); ?>">
+						</td>
+					</tr>
+				<?php endforeach; ?>
+				</tbody>
+			</table>
+
+			<table class="form-table" role="presentation">
+				<tbody>
+					<tr>
+						<th scope="row"><label for="oxysuppliers-receipt-reference"><?php esc_html_e( 'Their delivery note', 'oxysuppliers-for-woocommerce' ); ?></label></th>
+						<td><input type="text" id="oxysuppliers-receipt-reference" class="regular-text" name="reference" value=""></td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="oxysuppliers-receipt-notes"><?php esc_html_e( 'Notes', 'oxysuppliers-for-woocommerce' ); ?></label></th>
+						<td><textarea id="oxysuppliers-receipt-notes" class="large-text" rows="2" name="notes"></textarea></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<p class="submit">
+				<?php submit_button( __( 'Record the delivery', 'oxysuppliers-for-woocommerce' ), 'primary', 'submit', false ); ?>
+			</p>
+
+			<p class="description">
+				<?php
+				echo esc_html(
+					true === Settings::get( 'update_stock_on_receipt' )
+						? __( 'Stock goes up when this is recorded, for articles WooCommerce is counting. Every movement is written down.', 'oxysuppliers-for-woocommerce' )
+						: __( 'Stock is not touched: that has been switched off in the settings. The delivery is still recorded.', 'oxysuppliers-for-woocommerce' )
+				);
+				?>
+			</p>
+		</form>
+		<?php
+	}
+
+	/**
+	 * What has already arrived against this order.
+	 *
+	 * @param PurchaseOrder $order The order.
+	 * @return void
+	 */
+	private function render_receipts( PurchaseOrder $order ): void {
+		$receipts = $this->receipts->for_order( $order->id );
+
+		if ( array() === $receipts ) {
+			return;
+		}
+
+		?>
+		<h2><?php esc_html_e( 'Deliveries', 'oxysuppliers-for-woocommerce' ); ?></h2>
+		<table class="wp-list-table widefat striped">
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'When', 'oxysuppliers-for-woocommerce' ); ?></th>
+					<th><?php esc_html_e( 'Delivery note', 'oxysuppliers-for-woocommerce' ); ?></th>
+					<th><?php esc_html_e( 'Units', 'oxysuppliers-for-woocommerce' ); ?></th>
+					<th><?php esc_html_e( 'Stock', 'oxysuppliers-for-woocommerce' ); ?></th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+			<?php foreach ( $receipts as $receipt ) : ?>
+				<tr>
+					<td><?php echo esc_html( $receipt->received_at ); ?></td>
+					<td>
+						<?php echo esc_html( $receipt->reference ); ?>
+						<?php if ( $receipt->is_reversal() ) : ?>
+							<span class="oxysuppliers-status is-inactive">
+								<?php
+								echo esc_html(
+									sprintf(
+										/* translators: %d: the receipt being corrected. */
+										__( 'corrects #%d', 'oxysuppliers-for-woocommerce' ),
+										(int) $receipt->reverses_id
+									)
+								);
+								?>
+							</span>
+						<?php endif; ?>
+					</td>
+					<td><?php echo esc_html( sprintf( '%+d', $receipt->total_quantity() ) ); ?></td>
+					<td>
+						<?php
+						echo esc_html(
+							$receipt->stock_applied
+								? __( 'moved', 'oxysuppliers-for-woocommerce' )
+								: __( 'not moved', 'oxysuppliers-for-woocommerce' )
+						);
+						?>
+					</td>
+					<td>
+						<?php if ( ! $receipt->is_reversal() && current_user_can( Capabilities::RECEIVE_ORDERS ) && ! $this->is_reversed( $receipts, $receipt->id ) ) : ?>
+							<a class="button button-small" href="<?php echo esc_url( $this->reverse_url( $receipt->id ) ); ?>">
+								<?php esc_html_e( 'Correct this', 'oxysuppliers-for-woocommerce' ); ?>
+							</a>
+						<?php endif; ?>
+					</td>
+				</tr>
+			<?php endforeach; ?>
+			</tbody>
+		</table>
+		<p class="description">
+			<?php esc_html_e( 'A delivery entered by mistake is corrected by an opposite entry, never by deleting one: both stay, so the history still reads.', 'oxysuppliers-for-woocommerce' ); ?>
+		</p>
+		<?php
+	}
+
+	/**
+	 * Whether a receipt has already been corrected.
+	 *
+	 * @param list<\Oxysoft\OxySuppliers\Domain\Receipt> $receipts All of them.
+	 * @param int                                        $id       The one in question.
+	 * @return bool
+	 */
+	private function is_reversed( array $receipts, int $id ): bool {
+		foreach ( $receipts as $receipt ) {
+			if ( $receipt->reverses_id === $id ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Record a delivery.
+	 *
+	 * @return void
+	 */
+	public function handle_receive(): void {
+		$id = isset( $_POST['id'] ) ? absint( wp_unslash( $_POST['id'] ) ) : 0;
+
+		check_admin_referer( self::RECEIVE_ACTION . '_' . $id );
+
+		if ( ! current_user_can( Capabilities::RECEIVE_ORDERS ) ) {
+			wp_die( esc_html__( 'You are not allowed to receive goods.', 'oxysuppliers-for-woocommerce' ), 403 );
+		}
+
+		$order = $this->orders->find( $id );
+
+		if ( null === $order ) {
+			$this->redirect( array( 'notice' => 'missing' ) );
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Checked above.
+		$key        = isset( $_POST['idempotency_key'] ) ? sanitize_text_field( wp_unslash( $_POST['idempotency_key'] ) ) : '';
+		$quantities = isset( $_POST['received'] ) ? map_deep( wp_unslash( $_POST['received'] ), 'absint' ) : array();
+		$costs      = isset( $_POST['cost'] ) ? map_deep( wp_unslash( $_POST['cost'] ), 'sanitize_text_field' ) : array();
+		$reference  = isset( $_POST['reference'] ) ? sanitize_text_field( wp_unslash( $_POST['reference'] ) ) : '';
+		$notes      = isset( $_POST['notes'] ) ? sanitize_textarea_field( wp_unslash( $_POST['notes'] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		$outcome = $this->receiver->receive(
+			$order,
+			is_array( $quantities ) ? $quantities : array(),
+			is_array( $costs ) ? $costs : array(),
+			$key,
+			$reference,
+			$notes
+		);
+
+		$this->redirect(
+			array(
+				'action' => 'view',
+				'id'     => $id,
+				'notice' => 'received_' . $outcome->status,
+			)
+		);
+	}
+
+	/**
+	 * Correct a delivery that should not have been entered.
+	 *
+	 * @return void
+	 */
+	public function handle_reverse(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Verified on the next line, against this id.
+		$receipt_id = isset( $_GET['receipt'] ) ? absint( wp_unslash( $_GET['receipt'] ) ) : 0;
+
+		check_admin_referer( self::REVERSE_ACTION . '_' . $receipt_id );
+
+		if ( ! current_user_can( Capabilities::RECEIVE_ORDERS ) ) {
+			wp_die( esc_html__( 'You are not allowed to receive goods.', 'oxysuppliers-for-woocommerce' ), 403 );
+		}
+
+		$receipt = $this->receipts->find( $receipt_id );
+
+		if ( null === $receipt ) {
+			$this->redirect( array( 'notice' => 'missing' ) );
+		}
+
+		$outcome = $this->receiver->reverse( $receipt, wp_generate_uuid4() );
+
+		$this->redirect(
+			array(
+				'action' => 'view',
+				'id'     => $receipt->po_id,
+				'notice' => ReceiptOutcome::RECORDED === $outcome->status ? 'reversed' : 'received_' . $outcome->status,
+			)
+		);
+	}
+
+	/**
+	 * Where a correction lives.
+	 *
+	 * @param int $receipt_id The receipt to correct.
+	 * @return string
+	 */
+	private function reverse_url( int $receipt_id ): string {
+		return wp_nonce_url(
+			add_query_arg(
+				array(
+					'action'  => self::REVERSE_ACTION,
+					'receipt' => $receipt_id,
+				),
+				admin_url( 'admin-post.php' )
+			),
+			self::REVERSE_ACTION . '_' . $receipt_id
+		);
 	}
 
 	/**
@@ -1411,18 +1718,28 @@ final class PurchaseOrdersScreen implements Screen {
 		}
 
 		$messages = array(
-			'created'        => array( 'success', __( 'Purchase order started. Add what you want to buy.', 'oxysuppliers-for-woocommerce' ) ),
-			'saved'          => array( 'success', __( 'Purchase order saved.', 'oxysuppliers-for-woocommerce' ) ),
-			'status'         => array( 'success', __( 'Purchase order updated.', 'oxysuppliers-for-woocommerce' ) ),
-			'proposed'       => array( 'success', __( 'Draft purchase orders created, one per supplier.', 'oxysuppliers-for-woocommerce' ) ),
-			'sent'           => array( 'success', __( 'Sent to the supplier, with the PDF attached.', 'oxysuppliers-for-woocommerce' ) ),
-			'resent'         => array( 'success', __( 'Sent again. Both sends are in the history below.', 'oxysuppliers-for-woocommerce' ) ),
-			'not_sent'       => array( 'error', __( 'The message could not be sent, so nothing has gone to the supplier. Check the site\'s email settings and the address.', 'oxysuppliers-for-woocommerce' ) ),
-			'missing'        => array( 'error', __( 'That purchase order no longer exists.', 'oxysuppliers-for-woocommerce' ) ),
-			'no_supplier'    => array( 'error', __( 'Choose a supplier first.', 'oxysuppliers-for-woocommerce' ) ),
-			'not_editable'   => array( 'error', __( 'That order has already gone out, so its lines cannot be changed.', 'oxysuppliers-for-woocommerce' ) ),
-			'bad_transition' => array( 'error', __( 'A purchase order cannot go from where it is to there.', 'oxysuppliers-for-woocommerce' ) ),
-			'error'          => array( 'error', __( 'That could not be saved. Nothing was changed.', 'oxysuppliers-for-woocommerce' ) ),
+			'created'                   => array( 'success', __( 'Purchase order started. Add what you want to buy.', 'oxysuppliers-for-woocommerce' ) ),
+			'saved'                     => array( 'success', __( 'Purchase order saved.', 'oxysuppliers-for-woocommerce' ) ),
+			'status'                    => array( 'success', __( 'Purchase order updated.', 'oxysuppliers-for-woocommerce' ) ),
+			'proposed'                  => array( 'success', __( 'Draft purchase orders created, one per supplier.', 'oxysuppliers-for-woocommerce' ) ),
+			'sent'                      => array( 'success', __( 'Sent to the supplier, with the PDF attached.', 'oxysuppliers-for-woocommerce' ) ),
+			'resent'                    => array( 'success', __( 'Sent again. Both sends are in the history below.', 'oxysuppliers-for-woocommerce' ) ),
+			'not_sent'                  => array( 'error', __( 'The message could not be sent, so nothing has gone to the supplier. Check the site\'s email settings and the address.', 'oxysuppliers-for-woocommerce' ) ),
+
+			// Receiving. "Already recorded" is a success, not a failure: it is
+			// what a second press gets, and the goods are on the shelf once.
+			'received_recorded'         => array( 'success', __( 'Delivery recorded, and the stock has been updated.', 'oxysuppliers-for-woocommerce' ) ),
+			'received_already_recorded' => array( 'info', __( 'That delivery had already been recorded, so nothing was added a second time.', 'oxysuppliers-for-woocommerce' ) ),
+			'received_busy'             => array( 'warning', __( 'Somebody else is receiving this order right now. Look again before entering it a second time.', 'oxysuppliers-for-woocommerce' ) ),
+			'received_nothing'          => array( 'warning', __( 'No quantity was entered, so there was nothing to record.', 'oxysuppliers-for-woocommerce' ) ),
+			'received_too_many'         => array( 'error', __( 'More was entered than is still outstanding. Nothing was recorded.', 'oxysuppliers-for-woocommerce' ) ),
+			'received_failed'           => array( 'error', __( 'The delivery could not be recorded, and nothing was changed.', 'oxysuppliers-for-woocommerce' ) ),
+			'reversed'                  => array( 'success', __( 'Correction recorded: the stock has been put back and both entries stay in the history.', 'oxysuppliers-for-woocommerce' ) ),
+			'missing'                   => array( 'error', __( 'That purchase order no longer exists.', 'oxysuppliers-for-woocommerce' ) ),
+			'no_supplier'               => array( 'error', __( 'Choose a supplier first.', 'oxysuppliers-for-woocommerce' ) ),
+			'not_editable'              => array( 'error', __( 'That order has already gone out, so its lines cannot be changed.', 'oxysuppliers-for-woocommerce' ) ),
+			'bad_transition'            => array( 'error', __( 'A purchase order cannot go from where it is to there.', 'oxysuppliers-for-woocommerce' ) ),
+			'error'                     => array( 'error', __( 'That could not be saved. Nothing was changed.', 'oxysuppliers-for-woocommerce' ) ),
 		);
 
 		if ( ! isset( $messages[ $notice ] ) ) {
