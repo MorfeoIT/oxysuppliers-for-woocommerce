@@ -49,6 +49,13 @@ if [ -d "$FONTS" ]; then
 	rm -f "$FONTS"/DejaVuSerif* "$FONTS"/DejaVuSansMono*
 fi
 
+echo "Tolgo i file nascosti che arrivano dalle dipendenze..."
+# WordPress.org rifiuta i file nascosti, e non distingue fra i nostri e quelli
+# che un pacchetto Composer si porta dietro: thecodingmachine/safe spedisce dei
+# .gitkeep per tenere aperte le cartelle vuote. Da noi li tiene fuori
+# .gitattributes, che pero' vale solo sui file tracciati.
+find "$DEST/$SLUG" -name '.*' -not -name '.' -not -name '..' -prune -exec rm -rf {} +
+
 echo
 echo "Pronto: $DEST/$SLUG"
 du -sh "$DEST/$SLUG"
