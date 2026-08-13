@@ -35,9 +35,29 @@ cp "$REPO/composer.json" "$REPO/composer.lock" "$DEST/$SLUG/"
 	composer install --no-dev --classmap-authoritative --no-interaction --quiet
 )
 
+echo "Tolgo i font che il documento non usa..."
+# Dompdf ships three DejaVu families and the document uses one. The serif and
+# monospace families are 3.4 MB nobody downloads on purpose.
+#
+# DejaVu Sans STAYS: it is what carries the accents, and a supplier called
+# "Però" coming out as "Per" would be worse than a bigger download. A theme
+# that overrides the template and asks for a serif face will get one of the
+# built-in PDF fonts instead, which covers Latin but not Greek or Cyrillic.
+FONTS="$DEST/$SLUG/vendor/dompdf/dompdf/lib/fonts"
+
+if [ -d "$FONTS" ]; then
+	rm -f "$FONTS"/DejaVuSerif* "$FONTS"/DejaVuSansMono*
+fi
+
 echo
 echo "Pronto: $DEST/$SLUG"
 du -sh "$DEST/$SLUG"
+
+# The one font that must survive the trimming above.
+if [ ! -f "$FONTS/DejaVuSans.ttf" ]; then
+	echo "ERRORE: manca DejaVu Sans, gli accenti non avrebbero di che disegnarsi" >&2
+	exit 1
+fi
 
 # A zip, when one is wanted. Checked with unzip -l because the separators are
 # the thing that goes wrong.

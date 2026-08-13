@@ -134,6 +134,12 @@ jobs:
           grep -qx 'vendor/autoload.php' /tmp/files.txt
           grep -q 'vendor/dompdf/dompdf/src/Dompdf.php' /tmp/files.txt
 
+          # The font that carries the accents, and the two families that were
+          # trimmed out of the box because the document never asks for them.
+          grep -q 'DejaVuSans.ttf' /tmp/files.txt
+          ! grep -q 'DejaVuSerif' /tmp/files.txt
+          ! grep -q 'DejaVuSansMono' /tmp/files.txt
+
           # And it says what is in the box: a plugin that ships a vendor
           # directory without a composer.json is one a reviewer has to take on
           # trust.

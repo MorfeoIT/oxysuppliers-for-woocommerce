@@ -70,6 +70,10 @@ cp /tmp/$slug-composer.lock $pluginPath/composer.lock
 cd $pluginPath
 composer install --no-dev --classmap-authoritative --no-interaction --quiet
 
+# The same trimming the distributed package gets, so the bench runs what ships
+# rather than something slightly more generous.
+rm -f $pluginPath/vendor/dompdf/dompdf/lib/fonts/DejaVuSerif* $pluginPath/vendor/dompdf/dompdf/lib/fonts/DejaVuSansMono*
+
 chown -R webtest:webtest $pluginPath
 sudo -u webtest -H bash -c "cd $SitePath && $activate"
 sudo -u webtest -H bash -c "cd $SitePath && wp plugin list --format=csv --fields=name,status,version"
