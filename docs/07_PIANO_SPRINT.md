@@ -205,6 +205,34 @@ normale.
 *Chiuso quando:* esiste `docs/SUBMISSION_READINESS.md` che dice cosa è pronto e
 cosa manca, come su OxyArea.
 
+**Fatto il 14/08/2026.** `Tested up to: 7.0` non è una speranza: il banco gira
+WordPress 7.0.4 e le 117 verifiche su HTTP ci sono passate sopra. Il pacchetto è
+costruito su Linux, controllato file per file (33 verifiche: c'è quello che
+serve, non c'è quello che non deve uscire, ogni file PHP si compila, i percorsi
+dello zip usano la barra normale) e poi **installato dallo zip** come lo
+installerebbe un utente. Plugin Check è pulito su quello, non sulla cartella di
+sviluppo — differenza che la prima volta si è vista.
+
+Due cose che questo sprint ha trovato, e nessuna delle due era prevista:
+
+- **Il pannello dei fornitori sulla scheda prodotto non era mai stato vestito.**
+  Il foglio di stile si carica sulle schermate il cui hook contiene lo slug, e la
+  schermata prodotto di WooCommerce non è una di quelle: le regole di WooCommerce
+  schiacciavano ogni campo del listino a pochi pixel. Nessuna prova poteva
+  vederlo — quelle su HTTP cercano il testo nell'HTML, e il testo c'era. Un campo
+  troppo stretto per mostrare quello che contiene è vuoto per chi lo guarda, e
+  questo lo dice solo un'immagine. **Le schermate non sono un adempimento.**
+- **I file nascosti li spediscono anche le dipendenze.** `.gitattributes` tiene
+  fuori i nostri, ma vale solo sui file tracciati: `thecodingmachine/safe` porta
+  dei `.gitkeep`, e WordPress.org rifiuta i file nascosti senza chiedersi da dove
+  vengano.
+
+La disinstallazione è provata tutte e due le volte, eseguendo `uninstall.php`
+come lo esegue WordPress: di serie non si perde niente, con l'impostazione accesa
+si perde tutto. Anche qui due prove scritte male hanno insegnato qualcosa —
+un'opzione mai salvata non si può perdere, e i ruoli vanno riletti dal database
+perché la disinstallazione gira in un altro processo.
+
 ## Dopo: non si sottomette da soli
 
 Il rilascio su WordPress.org resta in coda con il resto della famiglia OxyWP
