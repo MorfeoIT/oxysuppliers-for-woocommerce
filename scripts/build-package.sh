@@ -26,11 +26,13 @@ echo "Estraggo i file tracciati..."
 git -C "$REPO" archive --format=tar HEAD | tar -x -C "$DEST/$SLUG"
 
 echo "Installo la dipendenza di runtime..."
+# composer.json and composer.lock stay in the package on purpose. A plugin that
+# ships a vendor/ directory without saying what is in it is a plugin a reviewer
+# has to take on trust — and Plugin Check says so out loud.
 cp "$REPO/composer.json" "$REPO/composer.lock" "$DEST/$SLUG/"
 (
 	cd "$DEST/$SLUG"
 	composer install --no-dev --classmap-authoritative --no-interaction --quiet
-	rm -f composer.json composer.lock
 )
 
 echo

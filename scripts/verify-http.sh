@@ -343,8 +343,25 @@ ORDERS_AS_EDITOR=$(get editor "$ORDERS")
 check_absent "un editor non vede gli ordini" "$ORDERS_AS_EDITOR" "New purchase order"
 
 echo
+echo "== un ordine vuoto non ha un documento da stampare =="
+check_absent "niente PDF su un ordine senza righe" "$CREATED" "Download the PDF"
+
+# One line, put there as a fixture: the point of what follows is the document
+# and who may have it, not how the line got on the order.
+mysql_run "INSERT INTO oxs_oxysuppliers_purchase_order_items (po_id, product_id, sku, supplier_sku, description, qty_ordered, qty_received, unit_cost_minor, line_total_minor) VALUES ($ORDER_ID, 10, 'MOUSE-X', 'F-MX', 'Mouse X wireless', 20, 0, 1180, 23600)"
+
+WITH_LINE=$(get admin "$ORDERS&action=view&id=$ORDER_ID")
+check "con una riga il documento c'e'" "$WITH_LINE" "Download the PDF"
+
+echo
+echo "== e prima di spedire si vede a chi =="
+check "il modulo d'invio mostra il destinatario" "$WITH_LINE" 'name="to"'
+check "con oggetto e messaggio gia' scritti" "$WITH_LINE" 'name="subject"'
+check "e dice che il PDF va allegato" "$WITH_LINE" "goes with it as an attachment"
+
+echo
 echo "== il PDF e' dietro un permesso, non dietro un indirizzo =="
-PDF_LINK=$(printf '%s' "$CANCELLED" | grep -o "admin-post.php?action=oxysuppliers_order_pdf&#038;id=$ORDER_ID&#038;_wpnonce=[a-z0-9]*" | head -1 | sed 's/&#038;/\&/g')
+PDF_LINK=$(printf '%s' "$WITH_LINE" | grep -o "admin-post.php?action=oxysuppliers_order_pdf&#038;id=$ORDER_ID&#038;_wpnonce=[a-z0-9]*" | head -1 | sed 's/&#038;/\&/g')
 
 if [ -n "$PDF_LINK" ]; then
 	PDF_TYPE=$(curl -sS -u "$BASIC" -b "$JARS/admin" -L -o /tmp/oxs-order.pdf -w '%{content_type}' "$BASE/wp-admin/$PDF_LINK")

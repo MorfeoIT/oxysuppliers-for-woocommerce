@@ -69,7 +69,6 @@ cp /tmp/$slug-composer.json $pluginPath/composer.json
 cp /tmp/$slug-composer.lock $pluginPath/composer.lock
 cd $pluginPath
 composer install --no-dev --classmap-authoritative --no-interaction --quiet
-rm -f $pluginPath/composer.json $pluginPath/composer.lock
 
 chown -R webtest:webtest $pluginPath
 sudo -u webtest -H bash -c "cd $SitePath && $activate"

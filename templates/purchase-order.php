@@ -20,6 +20,13 @@
 
 defined( 'ABSPATH' ) || exit;
 
+/*
+ * The variables below are locals of the method that includes this file, not
+ * globals — but a sniff reading the file on its own cannot tell, and prefixing
+ * them would make a template that a theme author copies read like machinery.
+ */
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+
 /** @var array<string,mixed> $data */
 $order    = $data['order'];
 $supplier = $data['supplier'];
