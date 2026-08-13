@@ -13,8 +13,13 @@ namespace Oxysoft\OxySuppliers\Persistence;
  * Table names cannot be bound as SQL placeholders, so every statement below
  * interpolates one. That value always comes from the Tables constants and can
  * never come from a request; every other value is bound through prepare().
+ *
+ * preferred_for_items() builds its placeholder list in a loop, one pair per
+ * article, which the sniff that counts placeholders in the literal string
+ * cannot see.
  */
 // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
 use Oxysoft\OxySuppliers\Domain\Money;
 use Oxysoft\OxySuppliers\Domain\OrderTerms;
@@ -137,6 +142,63 @@ final class SupplierProductRepository {
 		}
 
 		return array_values( array_map( array( $this, 'hydrate' ), $rows ) );
+	}
+
+	/**
+	 * The supplier to buy from, for a whole page of articles at once.
+	 *
+	 * One query for the page rather than one per row: this is what keeps the
+	 * reordering screen the same cost at twenty rows and at two hundred.
+	 *
+	 * @param list<array{0:int,1:int}> $items Pairs of product id and variation id.
+	 * @return array<string,SupplierProduct> Keyed by "product_id:variation_id".
+	 */
+	public function preferred_for_items( array $items ): array {
+		global $wpdb;
+
+		if ( array() === $items ) {
+			return array();
+		}
+
+		$table      = Tables::name( Tables::SUPPLIER_PRODUCTS );
+		$conditions = array();
+		$parameters = array();
+
+		foreach ( $items as $item ) {
+			$conditions[] = '(product_id = %d AND variation_id = %d)';
+			$parameters[] = (int) $item[0];
+			$parameters[] = (int) $item[1];
+		}
+
+		$where = implode( ' OR ', $conditions );
+
+		// Ordered the same way as for_item(), so the row that comes out first
+		// per article is the same one either way round.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table, table name from a constant, every value bound through prepare().
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$table} WHERE {$where} ORDER BY is_preferred DESC, unit_cost_minor ASC, id ASC",
+				$parameters
+			),
+			ARRAY_A
+		);
+
+		if ( ! is_array( $rows ) ) {
+			return array();
+		}
+
+		$preferred = array();
+
+		foreach ( $rows as $row ) {
+			$key = (int) $row['product_id'] . ':' . (int) $row['variation_id'];
+
+			// First one wins, and the order above decides which that is.
+			if ( ! isset( $preferred[ $key ] ) ) {
+				$preferred[ $key ] = $this->hydrate( $row );
+			}
+		}
+
+		return $preferred;
 	}
 
 	/**

@@ -32,14 +32,20 @@ final class Settings {
 		// Receiving goods moves stock unless an administrator says otherwise.
 		// This is the behaviour people expect; the log records every movement
 		// either way.
-		'update_stock_on_receipt'  => true,
+		'update_stock_on_receipt'       => true,
 
 		// Purchase order numbering.
-		'po_number_prefix'         => 'PO-',
+		'po_number_prefix'              => 'PO-',
+
+		// How full to fill an article back up, as a multiple of the low stock
+		// threshold WooCommerce already knows. Filling exactly to the threshold
+		// would put the shop straight back on it, so the default buys a second
+		// threshold's worth of breathing room.
+		'requirement_target_multiplier' => 2,
 
 		// Uninstalling leaves the data alone. Purchase orders are documents:
 		// nobody expects them to disappear because a plugin was removed.
-		'delete_data_on_uninstall' => false,
+		'delete_data_on_uninstall'      => false,
 	);
 
 	/**
