@@ -91,6 +91,18 @@ supplier_id_from_list() {
 
 SUPPLIERS="$BASE/wp-admin/admin.php?page=oxysuppliers&tab=suppliers"
 ADMIN_POST="$BASE/wp-admin/admin-post.php"
+WP="sudo -u webtest -H bash -c \"cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp\""
+
+# A suite that only passes on a bench nobody has touched is a suite that will
+# fail for the wrong reason sooner or later. Start from a known state, and say
+# so: this wipes the plugin's own tables, and only those.
+wipe() {
+	sudo -u webtest -H bash -c "cd /home/webtest/web/test.44123.it/public_html/oxysuppliers && wp db query \"DELETE FROM oxs_oxysuppliers_supplier_products; DELETE FROM oxs_oxysuppliers_purchase_orders; DELETE FROM oxs_oxysuppliers_suppliers; DELETE FROM oxs_oxysuppliers_logs;\"" >/dev/null 2>&1
+}
+
+echo "== parto da un banco pulito =="
+wipe
+pass "tabelle del plugin svuotate"
 
 echo "== accessi =="
 sign_in admin "$ADMIN_USER" "$ADMIN_PASS"
@@ -172,7 +184,7 @@ echo "== ricerca e filtro =="
 FOUND=$(get admin "$SUPPLIERS&s=Milano")
 check "cerca per citta'" "$FOUND" "ABC"
 MISSING=$(get admin "$SUPPLIERS&s=zzzznessuno")
-check "e non inventa risultati" "$MISSING" "No suppliers yet"
+check "e non inventa risultati" "$MISSING" "No supplier matches that search"
 
 echo
 echo "== modifica =="

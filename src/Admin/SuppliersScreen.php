@@ -211,7 +211,17 @@ final class SuppliersScreen implements Screen {
 			<?php if ( array() === $suppliers ) : ?>
 				<tr>
 					<td colspan="7">
-						<?php esc_html_e( 'No suppliers yet. Add the first one to start buying.', 'oxysuppliers-for-woocommerce' ); ?>
+						<?php
+						// An empty list and an empty result are not the same
+						// thing, and telling somebody they have no suppliers
+						// when they have forty and mistyped a search is how a
+						// screen loses their trust.
+						if ( '' !== $search || '' !== $status ) {
+							esc_html_e( 'No supplier matches that search.', 'oxysuppliers-for-woocommerce' );
+						} else {
+							esc_html_e( 'No suppliers yet. Add the first one to start buying.', 'oxysuppliers-for-woocommerce' );
+						}
+						?>
 					</td>
 				</tr>
 			<?php endif; ?>
