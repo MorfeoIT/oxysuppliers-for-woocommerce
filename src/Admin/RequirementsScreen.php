@@ -309,6 +309,27 @@ final class RequirementsScreen implements Screen {
 				<?php else : ?>
 					<span class="description">&mdash;</span>
 				<?php endif; ?>
+				<?php
+				/**
+				 * Fires inside the "to order" cell, under the quantity.
+				 *
+				 * A suggested quantity nobody can explain is a suggested
+				 * quantity nobody follows. This plugin's own answer needs no
+				 * explaining — a level somebody chose, minus what is there —
+				 * but anything that replaces the strategy is doing arithmetic
+				 * the person reading the row did not do, and this is where it
+				 * gets to show its working.
+				 *
+				 * It fires on every row, including the ones with nothing to
+				 * order: "why is this not on the list" is the same question
+				 * asked from the other side.
+				 *
+				 * @since 0.1.0
+				 *
+				 * @param \Oxysoft\OxySuppliers\Domain\Requirement $row The row, with its numbers and the facts behind them.
+				 */
+				do_action( 'oxysuppliers_after_suggested_quantity', $row );
+				?>
 			</td>
 			<td><?php $this->render_status( $row->status ); ?></td>
 		</tr>

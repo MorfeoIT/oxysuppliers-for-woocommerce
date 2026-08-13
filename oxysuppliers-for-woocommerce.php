@@ -40,7 +40,7 @@ const MIN_WC      = '9.0';
  * caret constraint — the minor goes up when something is added, the major when
  * something already published stops meaning what it meant.
  *
- * What 1.0 promises:
+ * What 1.0 promised:
  *
  * - `Engine\RequirementStrategy`, and the filter `oxysuppliers_requirement_strategy`
  *   that chooses which one is used;
@@ -49,11 +49,17 @@ const MIN_WC      = '9.0';
  *   changes;
  * - `Persistence\CostHistoryRepository`, the record of what was really paid.
  *
+ * 1.1 adds `oxysuppliers_after_suggested_quantity`, which fires under the
+ * quantity on the reordering screen. It exists because the paid add-on went
+ * looking for somewhere to show its working and there was nowhere: a suggested
+ * quantity nobody can explain is a suggested quantity nobody follows. The minor
+ * went up rather than the major because nothing already published changed.
+ *
  * The paid add-on checks this before doing anything at all. A newer major here
  * means it must refuse to run, rather than find out halfway through a request
  * which of its assumptions has stopped holding.
  */
-const API_VERSION = '1.0';
+const API_VERSION = '1.1';
 
 /**
  * Absolute path to the plugin directory, with a trailing slash.
