@@ -53,6 +53,13 @@ $activate = if ($SkipActivate) { 'true' } else { "wp plugin activate $slug >/dev
 scp -i $KeyPath (Join-Path $repo 'composer.json') "root@${Server}:/tmp/$slug-composer.json"
 scp -i $KeyPath (Join-Path $repo 'composer.lock') "root@${Server}:/tmp/$slug-composer.lock"
 
+# Gli script del banco viaggiano a parte e finiscono FUORI dalla cartella del
+# plugin. Dentro non possono stare: `git archive` rispetta gli export-ignore e
+# quindi non li porta, e una copia messa li' a mano se ne va al deploy dopo.
+$bench = Get-ChildItem (Join-Path $PSScriptRoot 'bench-*.php') | ForEach-Object { $_.FullName }
+scp -i $KeyPath $bench "root@${Server}:/tmp/"
+if ($LASTEXITCODE -ne 0) { throw 'scp degli script del banco fallito' }
+
 # No shell variables in this here-string: PowerShell expands with $ and escapes
 # with a backtick, so a shell $VAR either vanishes or comes out mangled. Every
 # path is interpolated on this side instead.
@@ -75,6 +82,10 @@ composer install --no-dev --classmap-authoritative --no-interaction --quiet
 rm -f $pluginPath/vendor/dompdf/dompdf/lib/fonts/DejaVuSerif* $pluginPath/vendor/dompdf/dompdf/lib/fonts/DejaVuSansMono*
 
 chown -R webtest:webtest $pluginPath
+
+mkdir -p $SitePath/bench
+cp /tmp/bench-*.php $SitePath/bench/
+chown -R webtest:webtest $SitePath/bench
 sudo -u webtest -H bash -c "cd $SitePath && $activate"
 sudo -u webtest -H bash -c "cd $SitePath && wp plugin list --format=csv --fields=name,status,version"
 du -sh $pluginPath

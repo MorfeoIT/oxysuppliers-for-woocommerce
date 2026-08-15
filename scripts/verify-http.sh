@@ -10,13 +10,20 @@
 # It signs in as three different people on purpose: what a screen does for
 # somebody who is not allowed to open it is part of what the screen does.
 
+# La coppia dell'autenticazione del dominio non sta in questo file: si legge da
+# /home/webtest/.basic-44123 (chmod 600), e la variabile d'ambiente la scavalca.
+# Un repository non e' il posto di una password, e la storia di git diventa
+# pubblica tutta insieme, non solo l'ultimo commit.
 BASE=${BASE:-https://test.44123.it/oxysuppliers}
-BASIC=${BASIC:-oxysoft:LA-COPPIA-STA-IN-UN-FILE-PROTETTO}
-ADMIN_USER=${ADMIN_USER:-oxyadmin}
-# No apostrophe in this message: the text inside ${VAR:?...} is still parsed for
-# quotes, so one would open a string that never closes, and bash reports the
-# syntax error a hundred lines further down.
-ADMIN_PASS=${ADMIN_PASS:?serve la password amministratore}
+BASIC=${BASIC:-$(cat "${BASIC_FILE:-/home/webtest/.basic-44123}" 2>/dev/null)}
+SITE=${SITE:-/home/webtest/web/test.44123.it/public_html/oxysuppliers}
+BENCH=${BENCH:-bench}
+
+if [ -z "$BASIC" ]; then
+	echo "non trovo la coppia del dominio: passa BASIC=utente:password" >&2
+	exit 1
+fi
+
 JARS=$(mktemp -d)
 
 PASSED=0
@@ -51,17 +58,34 @@ check_absent() {
 	fi
 }
 
+# Si entra coi cookie che WordPress stesso emette, non dal modulo di accesso.
+# Le password degli utenti del banco stavano in chiaro qui dentro, andavano
+# passate a ogni lancio, e sono cambiate: quando succede tutte le verifiche si
+# dichiarano rotte per il motivo sbagliato. Quello che si prova qui non e'
+# l'accesso, che e' di WordPress e funziona, ma cosa vede e cosa non vede chi
+# e' gia' entrato.
+#
+# Ne servono TRE: wp-admin su HTTPS passa da auth_redirect(), che pretende
+# quello sicuro, e col solo logged_in rimanda al modulo di accesso.
 sign_in() {
-	local who="$1" user="$2" password="$3"
+	local who="$1" user="$2"
+	local righe nome valore
 
-	curl -sS -u "$BASIC" -c "$JARS/$who" -b "$JARS/$who" \
-		-d "log=$user&pwd=$password&wp-submit=Log+In&testcookie=1&redirect_to=$BASE/wp-admin/" \
-		"$BASE/wp-login.php" -o /dev/null
+	righe=$(sudo -u webtest -H bash -c "cd $SITE && wp eval-file $BENCH/bench-auth-cookie.php $user" | sed 's/[[:space:]]*$//')
+
+	: > "$JARS/$who"
+
+	while IFS=$'\t' read -r nome valore; do
+		[ -n "$valore" ] || continue
+
+		printf '%s\tFALSE\t%s\tTRUE\t0\t%s\t%s\n' \
+			'test.44123.it' '/' "$nome" "$valore" >> "$JARS/$who"
+	done <<< "$righe"
 
 	if grep -q wordpress_logged_in "$JARS/$who"; then
 		pass "accesso di $who"
 	else
-		fail "accesso di $who"
+		fail "accesso di $who ($righe)"
 	fi
 }
 
@@ -105,9 +129,9 @@ wipe
 pass "tabelle del plugin svuotate"
 
 echo "== accessi =="
-sign_in admin "$ADMIN_USER" "$ADMIN_PASS"
-sign_in manager magazzino 'PASSWORD-RIMOSSA'
-sign_in editor redattore 'PASSWORD-RIMOSSA'
+sign_in admin oxyadmin
+sign_in manager magazzino
+sign_in editor redattore
 
 echo
 echo "== la schermata esiste e si apre =="
