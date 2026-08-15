@@ -3,7 +3,7 @@
  * Plugin Name:       OxySuppliers – Suppliers & Purchase Orders for WooCommerce
  * Plugin URI:        https://oxywp.com/plugins/oxysuppliers-for-woocommerce/
  * Description:       Know what to reorder, from which supplier and how much. Suppliers, purchase orders, goods receipts and stock updates, inside WooCommerce.
- * Version:           0.1.0
+ * Version:           0.1.1
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Requires Plugins:  woocommerce
@@ -66,13 +66,20 @@ const MIN_WC      = '9.0';
  * really cost and the only way in was reading somebody else's tables directly,
  * which is the sort of thing that breaks quietly on the next migration.
  *
+ * 1.4 adds `Persistence\PurchaseOrderRepository::delivery_performance()`: one row
+ * per received order with the date the supplier promised and the dates the goods
+ * actually turned up on. The dates were already being written down — the promise
+ * when the order is placed, the arrival when it is received — and the only thing
+ * missing was a way to read them together. Cancelled and never-sent orders are
+ * left out on purpose: they say nothing about a supplier.
+ *
  * All minors, not majors: nothing already published changed meaning.
  *
  * The paid add-on checks this before doing anything at all. A newer major here
  * means it must refuse to run, rather than find out halfway through a request
  * which of its assumptions has stopped holding.
  */
-const API_VERSION = '1.3';
+const API_VERSION = '1.4';
 
 /**
  * Absolute path to the plugin directory, with a trailing slash.

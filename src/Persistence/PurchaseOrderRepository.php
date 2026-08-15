@@ -343,6 +343,53 @@ final class PurchaseOrderRepository {
 	}
 
 	/**
+	 * When each order was expected, and when it actually turned up.
+	 *
+	 * One row per order that has been received, whole or in part: what the
+	 * supplier promised, what the first and last delivery against it were, and
+	 * what the order was worth. It is the raw material for "who delivers when
+	 * they say they will", and it is all data this plugin already writes down.
+	 *
+	 * **Cancelled and unsent orders are left out**, deliberately: an order that
+	 * never went anywhere says nothing about a supplier, and counting it as a
+	 * failure would blame them for a decision that was ours.
+	 *
+	 * @param int $months How far back to look.
+	 * @return list<array<string,mixed>>
+	 */
+	public function delivery_performance( int $months = 24 ): array {
+		global $wpdb;
+
+		$orders   = Tables::name( Tables::PURCHASE_ORDERS );
+		$receipts = Tables::name( Tables::RECEIPTS );
+
+		$states = array( PurchaseOrderStatus::RECEIVED->value, PurchaseOrderStatus::PARTIALLY_RECEIVED->value );
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names from constants.
+		$sql = "SELECT o.id, o.po_number, o.supplier_id, o.expected_date, o.order_date,
+		               o.total_minor, o.currency, o.status,
+		               MIN( r.received_at ) AS first_receipt,
+		               MAX( r.received_at ) AS last_receipt
+		          FROM {$orders} o
+		          INNER JOIN {$receipts} r ON r.po_id = o.id AND r.reverses_receipt_id IS NULL
+		         WHERE o.status IN ( %s, %s )
+		           AND o.order_date >= DATE_SUB( CURDATE(), INTERVAL %d MONTH )
+		         GROUP BY o.id
+		         ORDER BY o.supplier_id ASC, o.order_date DESC";
+
+		// L'assegnazione sta su una riga sola apposta: phpcs:ignore copre la riga
+		// che segue e basta, e spezzando la chiamata l'esenzione cadrebbe su una
+		// riga che non e' quella che il sniff guarda.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Values bound below.
+		$query = $wpdb->prepare( $sql, $states[0], $states[1], max( 1, min( 120, $months ) ) );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom tables, values bound.
+		$rows = $wpdb->get_results( $query, ARRAY_A );
+
+		return is_array( $rows ) ? array_values( $rows ) : array();
+	}
+
+	/**
 	 * The stored totals for a page of orders.
 	 *
 	 * The list does not load lines, so an order there cannot add itself up.

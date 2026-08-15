@@ -4,7 +4,7 @@ Tags: woocommerce, suppliers, purchase orders, inventory, stock
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.1.0
+Stable tag: 0.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -113,6 +113,9 @@ Nothing is written until you say so.
 7. The four reports the free plugin gives you.
 
 == Changelog ==
+
+= 0.1.1 =
+* Extension API 1.4: the paid add-on can now read, order by order, the date a supplier promised against the date the goods arrived. Both were already being recorded; nothing new is stored.
 
 = 0.1.0 =
 * First public release.

@@ -5,6 +5,21 @@ oxywp.com is generated from `readme.txt`, which follows this file.
 
 ## [Unreleased]
 
+### 0.1.1 — the dates were already there (16/08/2026)
+
+Extension API **1.4**: `PurchaseOrderRepository::delivery_performance()` returns
+one row per received order with the date the supplier promised and the dates the
+goods actually turned up on. Nothing new is recorded — both dates were already
+being written down, the promise when an order is placed and the arrival when it
+is received — and the only thing missing was a way to read them together.
+
+Cancelled and never-sent orders are left out of that query on purpose: they say
+nothing about a supplier, and counting them as failed deliveries would blame
+somebody else for a decision of ours.
+
+Nothing about the free plugin's own behaviour changed.
+
+
 ### Sprint 8 — ready to release (14/08/2026)
 
 **The Suppliers panel on a product had never been styled.** The stylesheet was
