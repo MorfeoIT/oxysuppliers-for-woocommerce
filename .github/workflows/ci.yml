@@ -156,3 +156,47 @@ jobs:
 
       - name: Say how big it is
         run: du -sh /tmp/build/oxysuppliers-for-woocommerce
+
+  conformita:
+    name: Conformita' — ogni file si compila, e le versioni coincidono
+    runs-on: ubuntu-latest
+
+    # QUELLO CHE LE PROVE NON POSSONO FARE.
+    #
+    # Le suite caricano quello che provano. Un file che nessuna prova tocca non
+    # viene nemmeno analizzato: e' cosi' che OxyProfit e' rimasto mesi con un
+    # costrutto che vuole PHP 8.2 dentro un plugin che dichiarava 8.1, con 422
+    # prove unitarie verdi sopra.
+    #
+    # Qui si compila OGNI file, e sulla versione piu' vecchia dichiarata — che
+    # e' quella su cui il plugin promette di girare, ed e' l'unica che conta per
+    # questo controllo.
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          coverage: none
+
+      - name: php -l su ogni file, sul PHP piu' vecchio dichiarato
+        run: find . -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
+
+      # Quella dell'intestazione e' la versione che WordPress mostra e con cui
+      # decide se c'e' un aggiornamento; quella del readme e' la versione che
+      # wordpress.org pubblica. Due numeri diversi sono un aggiornamento che
+      # non parte, e nessuno se ne accorge finche' non lo aspetta.
+      - name: La versione e' la stessa nell'intestazione e nel readme
+        run: |
+          PLUGIN=$(grep -m1 -E '^ \* Version:' oxysuppliers-for-woocommerce.php \
+            | sed 's/.*Version: *//' | tr -d ' \r')
+          README=$(grep -m1 '^Stable tag:' readme.txt \
+            | sed 's/.*Stable tag: *//' | tr -d ' \r')
+
+          echo "intestazione: ${PLUGIN}"
+          echo "readme:       ${README}"
+
+          if [ -z "$PLUGIN" ] || [ "$PLUGIN" != "$README" ]; then
+            echo "le due versioni non coincidono" >&2
+            exit 1
+          fi
