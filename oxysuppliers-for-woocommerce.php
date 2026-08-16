@@ -3,7 +3,7 @@
  * Plugin Name:       OxySuppliers – Suppliers & Purchase Orders for WooCommerce
  * Plugin URI:        https://oxywp.com/plugins/oxysuppliers-for-woocommerce/
  * Description:       Know what to reorder, from which supplier and how much. Suppliers, purchase orders, goods receipts and stock updates, inside WooCommerce.
- * Version:           0.1.1
+ * Version:           0.1.2
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Requires Plugins:  woocommerce
@@ -27,7 +27,7 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION     = '0.1.0';
+const VERSION     = '0.1.2';
 const PLUGIN_FILE = __FILE__;
 const MIN_PHP     = '8.1';
 const MIN_WC      = '9.0';
